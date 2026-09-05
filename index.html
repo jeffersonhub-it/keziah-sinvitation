@@ -533,9 +533,45 @@
     html{ scroll-behavior:auto; }
     .reveal{ opacity:1 !important; transform:none !important; }
   }
+  /* ================= LIVE VISITOR COUNTER (additive, doesn't affect existing layout) ================= */
+  .visitor-badge{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    z-index:600;
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(8px);
+    border:1px solid rgba(199,154,75,.35);
+    padding:8px 16px; border-radius:30px;
+    font-family:var(--sans); font-size:.78rem; font-weight:600; color:var(--ink);
+    box-shadow:var(--shadow-soft);
+    opacity:0; animation:fadein .8s ease forwards 1.2s;
+  }
+  .visitor-badge svg{ width:15px; height:15px; color:var(--gold); flex-shrink:0; }
+  .visitor-dot{
+    width:7px; height:7px; border-radius:50%; background:#5FBF7A; flex-shrink:0;
+    animation: visitorPulse 2s ease-in-out infinite;
+  }
+  @keyframes visitorPulse{
+    0%{ box-shadow:0 0 0 0 rgba(95,191,122,.5); }
+    70%{ box-shadow:0 0 0 6px rgba(95,191,122,0); }
+    100%{ box-shadow:0 0 0 0 rgba(95,191,122,0); }
+  }
+  @media (max-width:480px){
+    .visitor-badge{ top:10px; padding:6px 12px; font-size:.7rem; gap:6px; }
+    .visitor-badge svg{ width:13px; height:13px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .visitor-dot{ animation:none; }
+  }
 </style>
 </head>
 <body>
+
+<!-- ========== Live visitor counter: realtime presence via Firebase Firestore ========== -->
+<div class="visitor-badge" id="visitorBadge" aria-live="polite">
+  <span class="visitor-dot" aria-hidden="true"></span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+  <span><span id="visitorCount">1</span> viewing now</span>
+</div>
 
 <!-- gentle whole-site ambience: clouds & stars, purely decorative -->
 <div class="global-decor" aria-hidden="true">
@@ -1253,7 +1289,7 @@
   })();
 </script>
 
-<!-- ========== Live heart reactions: realtime sync via Firebase Firestore ==========
+<!-- ========== Live heart reactions + live visitor counter: realtime via Firebase Firestore ==========
      Firestore security rules needed (Console → Firestore Database → Rules):
 
      rules_version = '2';
@@ -1263,13 +1299,19 @@
            allow read: if true;
            allow write: if request.resource.data.count is int;
          }
+         match /presence/{sessionId} {
+           allow read: if true;
+           allow write: if request.resource.data.lastSeen is timestamp;
+           allow delete: if true;
+         }
        }
      }
 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import {
-    getFirestore, doc, onSnapshot, setDoc, increment
+    getFirestore, doc, onSnapshot, setDoc, increment,
+    collection, deleteDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -1386,6 +1428,63 @@
     }, (err) => {
       console.warn('Heart listener error:', err);
     });
+  }
+
+  /* ---------------- Live visitor counter (realtime presence) ----------------
+     Each open tab writes its own "presence/{sessionId}" doc and refreshes it
+     every 15s. A session counts as "viewing now" if its heartbeat is younger
+     than STALE_MS — this way a closed/crashed tab quietly drops out of the
+     count even if its own cleanup never runs. */
+  const visitorCountEl = document.getElementById('visitorCount');
+  if (visitorCountEl) {
+    const HEARTBEAT_MS = 15000;
+    const STALE_MS = 40000;
+    const sessionId = (crypto.randomUUID ? crypto.randomUUID() : 'v-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+    const presenceCol = collection(db, 'presence');
+    const myPresenceRef = doc(presenceCol, sessionId);
+    const knownSessions = new Map(); // id -> last-seen epoch ms
+
+    function renderVisitorCount(){
+      const now = Date.now();
+      let n = 0;
+      knownSessions.forEach((lastSeenMs) => { if (now - lastSeenMs < STALE_MS) n++; });
+      // Always count this tab itself, even before the first snapshot lands.
+      visitorCountEl.textContent = String(Math.max(n, 1));
+    }
+
+    async function beat(){
+      try {
+        await setDoc(myPresenceRef, { lastSeen: serverTimestamp() }, { merge: true });
+      } catch (err) {
+        console.warn('Presence heartbeat failed:', err);
+      }
+    }
+
+    beat();
+    setInterval(beat, HEARTBEAT_MS);
+    setInterval(renderVisitorCount, 5000); // let stale sessions age out even with no new snapshot
+
+    onSnapshot(presenceCol, (snap) => {
+      snap.docChanges().forEach((change) => {
+        if (change.type === 'removed') {
+          knownSessions.delete(change.doc.id);
+          return;
+        }
+        const data = change.doc.data();
+        const ms = (data && data.lastSeen && typeof data.lastSeen.toMillis === 'function')
+          ? data.lastSeen.toMillis()
+          : Date.now();
+        knownSessions.set(change.doc.id, ms);
+      });
+      renderVisitorCount();
+    }, (err) => {
+      console.warn('Presence listener error:', err);
+    });
+
+    // Best-effort cleanup so the count drops promptly on a normal close/navigate away.
+    const cleanup = () => { deleteDoc(myPresenceRef).catch(() => {}); };
+    window.addEventListener('pagehide', cleanup);
+    window.addEventListener('beforeunload', cleanup);
   }
 </script>
 
