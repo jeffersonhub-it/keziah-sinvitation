@@ -4,11 +4,16 @@
   KEZIAH'S CHRISTENING — EDITING GUIDE
   ══════════════════════════════════════════════════════════════════
   Page flow: Video Invitation → Realtime Hearts → Countdown + Baby
-  Picture → Photo Gallery → Event Details → Location → RSVP → Guestbook
-  → Thank You. ("Welcome", "Meet the Baby" and "Godparents" were moved
-  into an inert <template id="removed-sections"> near the bottom of
-  <body> — see the comment right above it if you'd like to bring any
-  of them back.)
+  Picture → Photo Gallery → Event Details → Location → Principal
+  Sponsors → RSVP → Guestbook → Thank You. ("Welcome", "Meet the Baby"
+  and the old static "Godparents" list were moved into an inert
+  <template id="removed-sections"> near the bottom of <body> — see the
+  comment right above it if you'd like to bring any of them back.
+  Principal Sponsors is now its own interactive section: tappable name
+  cards for every Ninong/Ninang, with a Firebase-backed Yes/No RSVP for
+  the Church Ceremony and Reception. Edit the `sponsorsData` array in
+  the <script type="module"> block near the bottom to add/remove/rename
+  sponsors.)
 
   Things left as [BRACKETS] are the details the poster didn't show —
   search for the bracket text to fill them in:
@@ -527,6 +532,78 @@
   .rsvp-success svg{ width:48px; height:48px; color:var(--gold); margin:0 auto 14px; }
   .rsvp-success p{ font-family:var(--serif); font-style:italic; font-size:1.3rem; }
 
+  /* ================= PRINCIPAL SPONSORS ================= */
+  .sponsors{ background:linear-gradient(180deg, rgba(225,211,243,.65) 0%, rgba(247,205,214,.6) 100%); }
+
+  .sponsor-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:520px){ .sponsor-grid{ grid-template-columns:1fr; } }
+
+  .sponsor-card{
+    position:relative; display:flex; align-items:center; gap:14px;
+    width:100%; text-align:left; font-family:var(--sans); cursor:pointer;
+    background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(255,255,255,.88));
+    border:1.5px solid #EDE3D6; border-radius:var(--radius-md);
+    padding:16px 18px; box-shadow:var(--shadow-soft);
+    transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease, opacity .3s ease;
+  }
+  .sponsor-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow); border-color:var(--gold-soft); }
+  .sponsor-card:focus-visible{ outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(199,154,75,0.18); }
+  .sponsor-card.selected{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(199,154,75,0.18), var(--shadow); }
+  .sponsor-card.responded{ cursor:default; opacity:.62; }
+  .sponsor-card.responded:hover{ transform:none; box-shadow:var(--shadow-soft); border-color:#EDE3D6; }
+
+  .sponsor-avatar{
+    flex-shrink:0; width:46px; height:46px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-weight:600; font-size:1.2rem; color:var(--white);
+    background:linear-gradient(160deg, var(--lavender-deep), var(--blush-deep));
+  }
+  .sponsor-card[data-role="Ninang"] .sponsor-avatar{ background:linear-gradient(160deg, var(--blush-deep), var(--butter-deep)); }
+
+  .sponsor-info{ min-width:0; }
+  .sponsor-name{ display:block; font-weight:600; color:var(--ink); font-size:.98rem; line-height:1.3; overflow-wrap:anywhere; }
+  .sponsor-role{ display:block; font-family:var(--serif); font-style:italic; font-size:.85rem; color:var(--gold); margin-top:2px; }
+
+  .sponsor-check{
+    position:absolute; top:-8px; right:-8px; width:24px; height:24px; border-radius:50%;
+    background:var(--leaf-deep); color:var(--white); align-items:center; justify-content:center;
+    display:none; box-shadow:0 4px 10px rgba(74,63,53,.18);
+  }
+  .sponsor-card.responded .sponsor-check{ display:flex; }
+  .sponsor-check svg{ width:12px; height:12px; }
+  .sponsor-tag{
+    display:none; margin-left:auto; padding:3px 10px; border-radius:20px;
+    font-size:.68rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-soft); background:var(--ivory-deep); flex-shrink:0;
+  }
+  .sponsor-card.responded .sponsor-tag{ display:inline-block; }
+
+  .sponsor-panel{
+    display:none; flex-direction:column; gap:20px; margin-top:26px;
+    border-radius:var(--radius-md); padding:clamp(24px,7vw,34px) clamp(20px,6vw,28px);
+    box-shadow:var(--shadow);
+  }
+  .sponsor-panel-head{ display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
+  .sponsor-back{
+    align-self:center; background:none; border:none; cursor:pointer; padding:4px 8px;
+    font-family:var(--sans); font-weight:600; font-size:.82rem; color:var(--ink-soft);
+    display:inline-flex; align-items:center; gap:6px; transition:color .2s ease;
+  }
+  .sponsor-back:hover{ color:var(--gold); }
+  .sponsor-back svg{ width:14px; height:14px; }
+  .sponsor-panel-name{ font-size:1.35rem; }
+  .sponsor-panel-sub{ color:var(--ink-soft); font-size:.92rem; }
+
+  .sponsor-error{
+    display:none; text-align:center; font-size:.88rem; color:#B5687E;
+    background:rgba(235,166,180,.14); border:1px solid rgba(235,166,180,.4);
+    border-radius:14px; padding:10px 14px;
+  }
+
+  .sponsor-success{ display:none; text-align:center; padding:22px 10px; }
+  .sponsor-success svg{ width:44px; height:44px; color:var(--gold); margin:0 auto 12px; }
+  .sponsor-success p{ font-family:var(--serif); font-style:italic; font-size:1.2rem; }
+
   /* ================= THANK YOU ================= */
   .thankyou{ background:rgba(253,251,245,.55); text-align:center; padding-bottom:70px; }
   .thankyou h2{ font-size:clamp(2rem,6vw,2.6rem); margin-bottom:20px; }
@@ -681,6 +758,7 @@
   <button data-target="gallery"><span class="tip">Gallery</span></button>
   <button data-target="details"><span class="tip">Event Details</span></button>
   <button data-target="location"><span class="tip">Location</span></button>
+  <button data-target="sponsors"><span class="tip">Sponsors</span></button>
   <button data-target="rsvp"><span class="tip">RSVP</span></button>
   <button data-target="guestbook"><span class="tip">Guestbook</span></button>
   <button data-target="thankyou"><span class="tip">Thank You</span></button>
@@ -976,6 +1054,76 @@
           Get Directions
         </a>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= PRINCIPAL SPONSORS ========================= -->
+<section class="sponsors" id="sponsors">
+  <div class="section-frame" aria-hidden="true">
+    <svg class="sf-corner sf-tl" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+    <svg class="sf-corner sf-tr" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+    <svg class="sf-corner sf-bl" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+    <svg class="sf-corner sf-br" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+  </div>
+  <div class="wave-top">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+      <path d="M0,48 C230,5 470,92 710,48 C950,10 1190,88 1440,50 L1440,0 L0,0 Z" fill="var(--lavender)" opacity=".6"/>
+      <path d="M0,58 C250,90 490,20 730,58 C970,92 1200,22 1440,58 L1440,0 L0,0 Z" fill="var(--lavender)"/>
+    </svg>
+  </div>
+  <svg class="decor-icon" viewBox="0 0 24 24" style="width:20px;top:10%;right:9%" fill="var(--blush-deep)"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 20.5 12.5 18 16.65 12 21 12 21z"/></svg>
+  <svg class="decor-icon gd-star" viewBox="0 0 24 24" style="width:16px;bottom:14%;left:8%" fill="var(--gold)"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg>
+  <svg class="mini-floral" viewBox="0 0 60 60" style="top:-8px;right:-8px;transform:scaleX(-1)"><use href="#floralSpray"/></svg>
+  <div class="container">
+    <div class="eyebrow-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="3.2"/><circle cx="16" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-6 5.5-6s5.5 2.5 5.5 6M10.5 20c0-3.5 2.7-6 5.5-6s5.5 2.5 5.5 6"/></svg>
+      <span>Chosen with love</span>
+    </div>
+    <h2 class="section-title">Principal Sponsors</h2>
+    <p class="section-sub">Dear Ninongs and Ninangs — tap your name below, then let us know if we'll see you at the church and at the reception.</p>
+
+    <!-- Name cards are generated from the sponsorsData list in the script near the
+         bottom of the page. Edit that list to add, remove, or rename sponsors. -->
+    <div class="sponsor-grid" id="sponsorGrid"></div>
+
+    <div class="sponsor-panel rsvp-form" id="sponsorPanel">
+      <div class="sponsor-panel-head">
+        <button type="button" class="sponsor-back" id="sponsorBack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          Choose a different name
+        </button>
+        <h3 class="sponsor-panel-name" id="sponsorPanelName"></h3>
+        <p class="sponsor-panel-sub">Please let us know about both events.</p>
+      </div>
+
+      <div class="field">
+        <label>Church Ceremony</label>
+        <div class="attend-toggle">
+          <input type="radio" id="sponsorChurchYes" name="sponsorChurch" value="yes">
+          <label for="sponsorChurchYes">Yes, I'll be there</label>
+          <input type="radio" id="sponsorChurchNo" name="sponsorChurch" value="no">
+          <label for="sponsorChurchNo">Can't make it</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Reception</label>
+        <div class="attend-toggle">
+          <input type="radio" id="sponsorReceptionYes" name="sponsorReception" value="yes">
+          <label for="sponsorReceptionYes">Yes, I'll be there</label>
+          <input type="radio" id="sponsorReceptionNo" name="sponsorReception" value="no">
+          <label for="sponsorReceptionNo">Can't make it</label>
+        </div>
+      </div>
+
+      <p class="sponsor-error" id="sponsorError"></p>
+      <button type="button" class="submit-btn" id="sponsorSubmitBtn">Confirm Response</button>
+    </div>
+
+    <div class="sponsor-success" id="sponsorSuccess">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12l5 5L20 6"/></svg>
+      <p id="sponsorSuccessMsg">Thank you! Your response has been recorded.</p>
     </div>
   </div>
 </section>
@@ -1396,6 +1544,19 @@
                          && request.resource.data.message.size() <= 300;
            allow update, delete: if false;
          }
+         match /sponsorRSVP/{slug} {
+           allow read: if true;
+           // Document ID is a slug of the sponsor's name, so the very first
+           // response "claims" that ID. Because only CREATE is allowed (never
+           // update/delete), a second attempt to write the same slug is
+           // rejected by Firestore itself — this is what actually prevents
+           // duplicate submissions, not just the client-side UI.
+           allow create: if request.resource.data.name is string
+                         && request.resource.data.role in ['Ninong', 'Ninang']
+                         && request.resource.data.church in ['yes', 'no']
+                         && request.resource.data.reception in ['yes', 'no'];
+           allow update, delete: if false;
+         }
        }
      }
 -->
@@ -1664,6 +1825,145 @@
         console.warn('Failed to post guestbook message:', err);
       } finally {
         submitBtn.disabled = false;
+      }
+    });
+  }
+
+  /* ---------------- Principal Sponsors: selectable name cards + Firestore RSVP ----------------
+     Edit this list to add, remove, or rename Ninongs and Ninangs. Each name becomes
+     one tappable card, and its slug (lowercase, hyphenated) becomes its Firestore
+     document ID — that's what makes duplicate submissions impossible to save twice. */
+  const sponsorsData = [
+    { name: '[Ninong Name 1]', role: 'Ninong' },
+    { name: '[Ninong Name 2]', role: 'Ninong' },
+    { name: '[Ninong Name 3]', role: 'Ninong' },
+    { name: '[Ninang Name 1]', role: 'Ninang' },
+    { name: '[Ninang Name 2]', role: 'Ninang' },
+    { name: '[Ninang Name 3]', role: 'Ninang' }
+  ];
+
+  function slugifySponsor(str){
+    return str.toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-+|-+$)/g, '') || 'sponsor';
+  }
+
+  const sponsorGrid = document.getElementById('sponsorGrid');
+
+  if (sponsorGrid) {
+    const sponsorPanel = document.getElementById('sponsorPanel');
+    const sponsorPanelName = document.getElementById('sponsorPanelName');
+    const sponsorBack = document.getElementById('sponsorBack');
+    const sponsorSubmitBtn = document.getElementById('sponsorSubmitBtn');
+    const sponsorError = document.getElementById('sponsorError');
+    const sponsorSuccess = document.getElementById('sponsorSuccess');
+    const sponsorSuccessMsg = document.getElementById('sponsorSuccessMsg');
+    const sponsorsCol = collection(db, 'sponsorRSVP');
+
+    let selectedSponsor = null;
+    const seenSlugs = new Set(); // slugs Firestore has confirmed already responded
+
+    function closeSponsorPanel(){
+      sponsorPanel.style.display = 'none';
+      selectedSponsor = null;
+      document.querySelectorAll('.sponsor-card').forEach(c => c.classList.remove('selected'));
+    }
+
+    function markResponded(slug){
+      seenSlugs.add(slug);
+      const card = sponsorGrid.querySelector(`[data-slug="${slug}"]`);
+      if (card) card.classList.add('responded');
+      // If the person currently has this exact sponsor's panel open (e.g. it was
+      // just answered from another tab/device), close it so they can't double-submit.
+      if (selectedSponsor && selectedSponsor.slug === slug) closeSponsorPanel();
+    }
+
+    sponsorsData.forEach((sp) => {
+      const slug = slugifySponsor(sp.name);
+      const initial = sp.name.replace(/[\[\]]/g, '').trim().charAt(0).toUpperCase() || '?';
+
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'sponsor-card';
+      card.dataset.slug = slug;
+      card.dataset.role = sp.role;
+      card.innerHTML = `
+        <span class="sponsor-avatar" aria-hidden="true">${initial}</span>
+        <span class="sponsor-info">
+          <span class="sponsor-name">${sp.name}</span>
+          <span class="sponsor-role">${sp.role}</span>
+        </span>
+        <span class="sponsor-tag">Responded</span>
+        <span class="sponsor-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>
+        </span>
+      `;
+      card.addEventListener('click', () => {
+        if (card.classList.contains('responded')) return;
+        selectedSponsor = { name: sp.name, role: sp.role, slug };
+        document.querySelectorAll('.sponsor-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        sponsorPanelName.textContent = sp.name;
+        sponsorError.style.display = 'none';
+        sponsorSuccess.style.display = 'none';
+        document.querySelectorAll('input[name="sponsorChurch"], input[name="sponsorReception"]')
+          .forEach(i => { i.checked = false; });
+        sponsorPanel.style.display = 'flex';
+        sponsorPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      sponsorGrid.appendChild(card);
+    });
+
+    sponsorBack.addEventListener('click', closeSponsorPanel);
+
+    // Realtime listener: as soon as any sponsor's response is saved (by anyone,
+    // on any device), their card flips to "Responded" for every visitor — this
+    // is the friendly, visible half of duplicate prevention.
+    onSnapshot(sponsorsCol, (snap) => {
+      snap.forEach((d) => markResponded(d.id));
+    }, (err) => {
+      console.warn('Sponsor RSVP listener error:', err);
+    });
+
+    sponsorSubmitBtn.addEventListener('click', async () => {
+      if (!selectedSponsor) return;
+      if (seenSlugs.has(selectedSponsor.slug)) {
+        sponsorError.textContent = 'This name already has a response recorded.';
+        sponsorError.style.display = 'block';
+        return;
+      }
+      const churchInput = document.querySelector('input[name="sponsorChurch"]:checked');
+      const receptionInput = document.querySelector('input[name="sponsorReception"]:checked');
+      if (!churchInput || !receptionInput) {
+        sponsorError.textContent = "Please choose Yes or No for both the church ceremony and the reception.";
+        sponsorError.style.display = 'block';
+        return;
+      }
+      sponsorError.style.display = 'none';
+      sponsorSubmitBtn.disabled = true;
+      const { name, role, slug } = selectedSponsor;
+      try {
+        // setDoc (not merge) on an ID-based doc: the first write for this slug is
+        // a Firestore "create" and succeeds; a second write for the same slug is
+        // seen as an "update" and is rejected by the security rules above.
+        await setDoc(doc(sponsorsCol, slug), {
+          name,
+          role,
+          church: churchInput.value,
+          reception: receptionInput.value,
+          respondedAt: serverTimestamp()
+        });
+        markResponded(slug);
+        sponsorPanel.style.display = 'none';
+        sponsorSuccessMsg.textContent = `Thank you, ${name}! Your response has been recorded.`;
+        sponsorSuccess.style.display = 'block';
+        sponsorSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (err) {
+        console.warn('Sponsor RSVP failed:', err);
+        sponsorError.textContent = "It looks like this name already has a response recorded, or something went wrong. Please refresh and try again.";
+        sponsorError.style.display = 'block';
+      } finally {
+        sponsorSubmitBtn.disabled = false;
       }
     });
   }
