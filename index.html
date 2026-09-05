@@ -224,6 +224,65 @@
   .poster-frame .video-wrap video{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;
   }
+
+  /* ---- Live heart reactions overlay (sits on top of the video only) ---- */
+  .heart-reaction-layer{ position:absolute; inset:0; z-index:5; pointer-events:none; }
+
+  .floating-hearts{
+    position:absolute; right:10px; bottom:96px;
+    width:64px; height:calc(100% - 130px);
+    pointer-events:none; overflow:visible;
+  }
+  .floating-heart{
+    position:absolute; left:50%; bottom:0; transform:translate(-50%,0);
+    will-change:transform, opacity;
+    animation: heartFloat var(--duration,2.6s) cubic-bezier(.22,.68,.36,1) forwards;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,.20));
+    line-height:1;
+  }
+  @keyframes heartFloat{
+    0%{ transform:translate(-50%,0) scale(.4) rotate(0deg); opacity:0; }
+    10%{ opacity:1; transform:translate(-50%,-6%) scale(1) rotate(0deg); }
+    100%{ transform:translate(calc(-50% + var(--drift,0px)), -340%) scale(.8) rotate(var(--spin,8deg)); opacity:0; }
+  }
+
+  .heart-counter{
+    position:absolute; right:10px; bottom:72px;
+    display:flex; align-items:center; gap:5px;
+    background:rgba(255,255,255,.9); backdrop-filter:blur(5px);
+    padding:5px 11px; border-radius:20px;
+    font-family:var(--sans); font-size:.72rem; font-weight:700; color:var(--ink);
+    box-shadow:0 6px 14px rgba(0,0,0,.18);
+    pointer-events:none;
+  }
+  .heart-counter svg{ width:12px; height:12px; color:#EB5C79; flex-shrink:0; }
+
+  .heart-fab{
+    position:absolute; right:12px; bottom:16px;
+    width:50px; height:50px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg, rgba(255,255,255,.96), rgba(255,255,255,.78));
+    backdrop-filter:blur(6px);
+    border:none; cursor:pointer; color:#EB5C79;
+    box-shadow:0 10px 22px rgba(0,0,0,.24), 0 0 0 1px rgba(255,255,255,.55) inset;
+    pointer-events:auto; -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+    transition:transform .15s ease;
+  }
+  .heart-fab svg{ width:24px; height:24px; }
+  .heart-fab:active{ transform:scale(.86); }
+  .heart-fab.pulse{ animation:heartFabPulse .32s ease; }
+  @keyframes heartFabPulse{ 0%{ transform:scale(1);} 45%{ transform:scale(1.26);} 100%{ transform:scale(1);} }
+
+  @media (max-width:420px){
+    .heart-fab{ width:46px; height:46px; right:10px; bottom:14px; }
+    .heart-fab svg{ width:21px; height:21px; }
+    .heart-counter{ right:8px; bottom:64px; font-size:.68rem; padding:4px 9px; }
+    .floating-hearts{ right:8px; bottom:88px; width:54px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .floating-heart{ animation-duration:.01s !important; }
+    .heart-fab.pulse{ animation:none; }
+  }
   .poster-frame .video-caption{
     text-align:center; padding-top:14px; font-family:var(--serif); font-style:italic;
     color:var(--ink-soft); font-size:.95rem;
@@ -582,6 +641,18 @@
         aria-label="Video invitation for Keziah's Christening, December 20 2026, 1:00 PM, Las Piñas City">
         <source src="hero-video.mp4" type="video/mp4">
       </video>
+
+      <!-- ========== Live heart reactions (TikTok-style, synced via Firebase) ========== -->
+      <div class="heart-reaction-layer" aria-hidden="false">
+        <div class="floating-hearts" id="floatingHearts"></div>
+        <div class="heart-counter" id="heartCounter">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 20.5 12.5 18 16.65 12 21 12 21z"/></svg>
+          <span id="heartCounterVal">0</span>
+        </div>
+        <button class="heart-fab" id="heartFab" type="button" aria-label="Send a heart">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 20.5 12.5 18 16.65 12 21 12 21z"/></svg>
+        </button>
+      </div>
     </div>
     <div class="video-caption">Keziah's Christening &mdash; Video Invitation</div>
   </div>
@@ -1170,6 +1241,141 @@
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     revealTargets.forEach(el => revealObserver.observe(el));
   })();
+</script>
+
+<!-- ========== Live heart reactions: realtime sync via Firebase Firestore ==========
+     Firestore security rules needed (Console → Firestore Database → Rules):
+
+     rules_version = '2';
+     service cloud.firestore {
+       match /databases/{database}/documents {
+         match /liveReactions/{docId} {
+           allow read: if true;
+           allow write: if request.resource.data.count is int;
+         }
+       }
+     }
+-->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import {
+    getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, increment
+  } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_3LrOapDFj3lfc0LgvI_kzd8ctCPEBu4",
+    authDomain: "keziahinvitation-cf00d.firebaseapp.com",
+    projectId: "keziahinvitation-cf00d",
+    storageBucket: "keziahinvitation-cf00d.firebasestorage.app",
+    messagingSenderId: "140492455109",
+    appId: "1:140492455109:web:3eb2e9bb7a21f186a7c4ac"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const heartDocRef = doc(db, "liveReactions", "heroHeart");
+
+  const heartFab = document.getElementById('heartFab');
+  const heartCounterVal = document.getElementById('heartCounterVal');
+  const floatLayer = document.getElementById('floatingHearts');
+
+  if (heartFab && floatLayer && heartCounterVal) {
+    let knownCount = null;      // last confirmed count from Firestore
+    let pendingLocal = 0;       // taps not yet flushed to Firestore
+    let sentUnconfirmed = 0;    // flushed taps not yet reflected in a snapshot
+    const FLUSH_MS = 350;
+    const MAX_BURST = 14;       // cap on hearts spawned from one snapshot update
+
+    const heartColors = ['#EB5C79', '#EBA6B4', '#F3CE66', '#C6ACE6', '#9FD3E1'];
+
+    function formatCount(n){
+      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return String(n);
+    }
+
+    function renderCount(n){ heartCounterVal.textContent = formatCount(Math.max(0, n)); }
+
+    function spawnHeart(){
+      const el = document.createElement('div');
+      el.className = 'floating-heart';
+      el.innerHTML = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 20.5 12.5 18 16.65 12 21 12 21z"/></svg>';
+      const drift = (Math.random() * 50 - 25).toFixed(1) + 'px';
+      const spin = (Math.random() * 24 - 12).toFixed(1) + 'deg';
+      const duration = (2.3 + Math.random() * 1.1).toFixed(2) + 's';
+      const size = (16 + Math.random() * 12).toFixed(0) + 'px';
+      const startX = (Math.random() * 20 - 10).toFixed(1) + 'px';
+      el.style.setProperty('--drift', drift);
+      el.style.setProperty('--spin', spin);
+      el.style.setProperty('--duration', duration);
+      el.style.left = `calc(50% + ${startX})`;
+      el.style.fontSize = size;
+      el.style.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+      floatLayer.appendChild(el);
+      const cleanup = () => { if (el.parentNode) el.remove(); };
+      el.addEventListener('animationend', cleanup);
+      setTimeout(cleanup, 4000); // safety net in case animationend doesn't fire
+    }
+
+    function handleTap(){
+      pendingLocal += 1;
+      spawnHeart();
+      renderCount((knownCount || 0) + pendingLocal + sentUnconfirmed);
+      heartFab.classList.remove('pulse');
+      void heartFab.offsetWidth; // restart animation
+      heartFab.classList.add('pulse');
+    }
+
+    heartFab.addEventListener('click', handleTap);
+    heartFab.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(); }, { passive: false });
+
+    // Batch rapid spam-taps into one write every FLUSH_MS, so the UI stays smooth
+    // and Firestore isn't hit with a write per tap.
+    setInterval(async () => {
+      if (pendingLocal <= 0) return;
+      const amount = pendingLocal;
+      pendingLocal = 0;
+      sentUnconfirmed += amount;
+      try {
+        await updateDoc(heartDocRef, { count: increment(amount) });
+      } catch (err) {
+        try { await setDoc(heartDocRef, { count: amount }, { merge: true }); }
+        catch (err2) { console.warn('Heart sync failed:', err2); }
+      }
+    }, FLUSH_MS);
+
+    // Realtime listener: every guest's tap arrives here, so hearts stay in sync for everyone.
+    onSnapshot(heartDocRef, (snap) => {
+      const data = snap.data();
+      const newCount = (data && typeof data.count === 'number') ? data.count : 0;
+
+      if (knownCount === null){
+        knownCount = newCount;
+        renderCount(newCount);
+        return;
+      }
+
+      const delta = newCount - knownCount;
+      knownCount = newCount;
+
+      // Don't re-animate hearts we already showed optimistically for our own taps.
+      let othersDelta = delta - sentUnconfirmed;
+      if (othersDelta < 0) othersDelta = 0;
+      sentUnconfirmed = Math.max(0, sentUnconfirmed - delta);
+
+      const burst = Math.min(othersDelta, MAX_BURST);
+      for (let i = 0; i < burst; i++){
+        setTimeout(spawnHeart, i * 65);
+      }
+      renderCount(newCount);
+    }, (err) => {
+      console.warn('Heart listener error:', err);
+    });
+
+    getDoc(heartDocRef).then((snap) => {
+      if (!snap.exists()) setDoc(heartDocRef, { count: 0 }).catch(() => {});
+    }).catch(() => {});
+  }
 </script>
 
 </body>
