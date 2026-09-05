@@ -1662,29 +1662,8 @@
   tickCountdown();
   const countdownInterval = setInterval(tickCountdown, 1000);
 
-  /* ---------------- RSVP form (client-side only) ---------------- */
-  const rsvpForm = document.getElementById('rsvpForm');
-  const rsvpSuccess = document.getElementById('rsvpSuccess');
-  const rsvpSuccessMsg = document.getElementById('rsvpSuccessMsg');
-
-  rsvpForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('rsvpName').value.trim();
-    const guests = document.getElementById('rsvpGuests').value;
-    const attending = document.querySelector('input[name="attending"]:checked').value;
-
-    if (attending === 'yes'){
-      rsvpSuccessMsg.textContent = `Thank you, ${name}! We've saved ${guests} seat(s) for you. We can't wait to celebrate together.`;
-    } else {
-      rsvpSuccessMsg.textContent = `Thank you for letting us know, ${name}. You'll be missed, but we appreciate you telling us.`;
-    }
-    rsvpForm.style.display = 'none';
-    rsvpSuccess.style.display = 'block';
-
-    // NOTE: This form is front-end only and does not send data anywhere yet.
-    // To collect real responses, connect this to a form backend (e.g. Formspree,
-    // Google Forms, or your own server) inside this submit handler.
-  });
+  /* ---------------- Main RSVP form now saves to Firebase — see the
+     type="module" script near the bottom, next to the guestbook logic. ---------------- */
 
   /* ---------------- Subtle scroll-in reveal, one moment per section ---------------- */
   (function(){
@@ -1721,6 +1700,14 @@
            allow read: if true;
            allow write: if request.resource.data.lastSeen is timestamp;
            allow delete: if true;
+         }
+         match /rsvp/{entryId} {
+           allow read: if true;
+           allow create: if request.resource.data.name is string
+                         && request.resource.data.name.size() <= 80
+                         && request.resource.data.attending in ['yes', 'no']
+                         && request.resource.data.guests is number;
+           allow update, delete: if false;
          }
          match /guestbook/{entryId} {
            allow read: if true;
@@ -1925,6 +1912,48 @@
     const cleanup = () => { deleteDoc(myPresenceRef).catch(() => {}); };
     window.addEventListener('pagehide', cleanup);
     window.addEventListener('beforeunload', cleanup);
+  }
+
+  /* ---------------- Main RSVP form (saved to Firestore, collection "rsvp") ---------------- */
+  const rsvpForm = document.getElementById('rsvpForm');
+  const rsvpSuccess = document.getElementById('rsvpSuccess');
+  const rsvpSuccessMsg = document.getElementById('rsvpSuccessMsg');
+
+  if (rsvpForm && rsvpSuccess) {
+    const rsvpCol = collection(db, 'rsvp');
+
+    rsvpForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('rsvpName').value.trim();
+      const guests = document.getElementById('rsvpGuests').value;
+      const attending = document.querySelector('input[name="attending"]:checked').value;
+      if (!name) return;
+
+      const submitBtn = rsvpForm.querySelector('.submit-btn');
+      submitBtn.disabled = true;
+      try {
+        await addDoc(rsvpCol, {
+          name,
+          guests: Number(guests),
+          attending,
+          createdAt: serverTimestamp()
+        });
+
+        if (attending === 'yes'){
+          rsvpSuccessMsg.textContent = `Thank you, ${name}! We've saved ${guests} seat(s) for you. We can't wait to celebrate together.`;
+        } else {
+          rsvpSuccessMsg.textContent = `Thank you for letting us know, ${name}. You'll be missed, but we appreciate you telling us.`;
+        }
+        rsvpForm.style.display = 'none';
+        rsvpSuccess.style.display = 'block';
+      } catch (err) {
+        console.warn('Failed to save RSVP:', err);
+        rsvpSuccessMsg.textContent = "Something went wrong saving your RSVP. Please check your connection and try again.";
+        rsvpSuccess.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
   }
 
   /* ---------------- Guestbook (realtime messages via Firestore) ---------------- */
