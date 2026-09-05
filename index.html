@@ -1472,6 +1472,53 @@
 <footer>Made with love for Keziah's Christening Day</footer>
 
 <script>
+  /* ---------------- Remember scroll position across refresh / back / reopen ----------------
+     Without this, every reload (or coming back into the page from a phone's in-app
+     browser, e.g. Messenger/Facebook) starts at the very top again. We remember which
+     *section* the guest was last looking at (not a raw pixel offset, which drifts once
+     images/video finish loading and the page height changes) and jump straight back to
+     it as soon as the page loads. */
+  (function(){
+    try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch(e){}
+
+    const SCROLL_KEY = 'kezScrollSection';
+    const allSectionEls = Array.from(document.querySelectorAll('section[id]'));
+
+    function currentSectionId(){
+      const scrollPos = window.scrollY + window.innerHeight / 2;
+      let current = allSectionEls[0];
+      allSectionEls.forEach(sec => { if (sec.offsetTop <= scrollPos) current = sec; });
+      return current ? current.id : null;
+    }
+
+    let saveScheduled = false;
+    function saveScrollPosition(){
+      if (saveScheduled) return;
+      saveScheduled = true;
+      requestAnimationFrame(() => {
+        saveScheduled = false;
+        const id = currentSectionId();
+        if (id) { try { localStorage.setItem(SCROLL_KEY, id); } catch(e){} }
+      });
+    }
+    window.addEventListener('scroll', saveScrollPosition, { passive: true });
+    window.addEventListener('pagehide', saveScrollPosition);
+    window.addEventListener('beforeunload', saveScrollPosition);
+
+    function restoreScrollPosition(){
+      let savedId = null;
+      try { savedId = localStorage.getItem(SCROLL_KEY); } catch(e){}
+      if (!savedId) return;
+      const target = document.getElementById(savedId);
+      if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+    // Jump back as soon as this script runs (markup is already in place)...
+    restoreScrollPosition();
+    // ...and again once video/images/fonts finish loading, since those can shift
+    // section heights and throw off the first jump.
+    window.addEventListener('load', restoreScrollPosition);
+  })();
+
   /* ---------------- Hero video: nudge autoplay on mobile browsers that need it ---------------- */
   (function(){
     const heroVideo = document.querySelector('.poster-frame video');
