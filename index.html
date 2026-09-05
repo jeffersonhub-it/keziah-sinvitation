@@ -13,7 +13,10 @@
   cards for every Ninong/Ninang, with a Firebase-backed Yes/No RSVP for
   the Church Ceremony and Reception. Edit the `sponsorsData` array in
   the <script type="module"> block near the bottom to add/remove/rename
-  sponsors.)
+  sponsors. Gift Suggestions is a static section: brand cards with a
+  "View Gift Ideas" button that expands a list of suggested items per
+  brand — edit the `giftBrands` array in the plain <script> block near
+  the bottom to add/remove brands, logos, and ideas.)
 
   Things left as [BRACKETS] are the details the poster didn't show —
   search for the bracket text to fill them in:
@@ -26,6 +29,11 @@
   5. "photo1.jpg" etc.        → gallery photos, in the gallery section
   6. "COUNTDOWN TARGET"       → in the <script>, already set to
                                  Dec 20, 2026, 1:00 PM
+  7. "[Ninong/Ninang Name #]" → Principal Sponsors names, in the
+                                 `sponsorsData` array near the bottom
+  8. "[Brand Name #]" and     → Gift Suggestions brands/ideas, in the
+     "[Gift idea #]"            `giftBrands` array near the bottom, with
+                                 matching "gift-logo1.jpg" etc. images
   The poster art itself (poster.png) is untouched — do not edit it.
   ══════════════════════════════════════════════════════════════════
 -->
@@ -168,19 +176,19 @@
     text-align:center; max-width:480px; margin:0 auto 56px; color:var(--ink-soft); font-size:1.05rem;
   }
 
-  /* ---------- premium card treatment, reused by detail/gp/rsvp cards ---------- */
-  .detail-card, .gp-card, .rsvp-form{
+  /* ---------- premium card treatment, reused by detail/gp/rsvp/gift cards ---------- */
+  .detail-card, .gp-card, .rsvp-form, .gift-card{
     position:relative;
     background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(255,255,255,.88));
     backdrop-filter: blur(6px);
     border: 1px solid rgba(255,255,255,.8);
     transition: transform .35s ease, box-shadow .35s ease;
   }
-  .detail-card::before, .gp-card::before, .rsvp-form::before{
+  .detail-card::before, .gp-card::before, .rsvp-form::before, .gift-card::before{
     content:''; position:absolute; top:0; left:14%; right:14%; height:3px; border-radius:0 0 6px 6px;
     background:linear-gradient(90deg, transparent, var(--gold), transparent); opacity:.7;
   }
-  .detail-card:hover, .gp-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow-lift); }
+  .detail-card:hover, .gp-card:hover, .gift-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow-lift); }
 
   .divider-flourish{
     display:flex; align-items:center; justify-content:center; gap:16px;
@@ -604,6 +612,51 @@
   .sponsor-success svg{ width:44px; height:44px; color:var(--gold); margin:0 auto 12px; }
   .sponsor-success p{ font-family:var(--serif); font-style:italic; font-size:1.2rem; }
 
+  /* ================= GIFT SUGGESTIONS ================= */
+  .gifts{ background:linear-gradient(180deg, rgba(252,231,166,.5) 0%, rgba(253,246,228,.65) 100%); }
+
+  .gift-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:520px){ .gift-grid{ grid-template-columns:1fr; } }
+
+  .gift-card{
+    border-radius:var(--radius-md); padding:clamp(22px,6vw,28px) clamp(18px,5vw,22px) clamp(20px,5vw,24px);
+    text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; align-items:center;
+  }
+
+  .gift-logo-wrap{
+    width:clamp(72px,20vw,88px); height:clamp(72px,20vw,88px); border-radius:22px; margin-bottom:16px;
+    background:linear-gradient(160deg, var(--white), var(--ivory-deep));
+    border:1px solid rgba(199,154,75,.25); box-shadow:0 10px 22px rgba(74,63,53,.10);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;
+  }
+  .gift-logo-wrap img{ width:100%; height:100%; object-fit:contain; padding:12px; }
+  .gift-logo-fallback{ display:none; width:100%; height:100%; align-items:center; justify-content:center; color:var(--gold-soft); }
+  .gift-logo-fallback svg{ width:40%; height:40%; }
+
+  .gift-name{ font-family:var(--serif); font-weight:600; font-size:1.15rem; color:var(--ink); margin-bottom:16px; }
+
+  .gift-toggle-btn{
+    display:inline-flex; align-items:center; gap:8px; background:transparent; cursor:pointer;
+    border:1.5px solid var(--gold); color:var(--gold); font-family:var(--sans); font-weight:700;
+    font-size:.88rem; padding:11px 22px; border-radius:40px; transition:background .25s ease, color .25s ease, transform .2s ease;
+  }
+  .gift-toggle-btn:hover{ background:var(--gold); color:var(--white); transform:translateY(-2px); }
+  .gift-toggle-btn .chev{ display:inline-block; transition:transform .3s ease; font-size:.8em; }
+  .gift-toggle-btn[aria-expanded="true"] .chev{ transform:rotate(180deg); }
+
+  .gift-items{ width:100%; display:grid; grid-template-rows:0fr; transition:grid-template-rows .4s ease; margin-top:4px; }
+  .gift-items.open{ grid-template-rows:1fr; }
+  .gift-items-inner{ overflow:hidden; }
+  .gift-items ul{
+    list-style:none; text-align:left; padding-top:18px; margin-top:14px;
+    border-top:1px dashed rgba(199,154,75,.4);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .gift-items li{
+    display:flex; align-items:flex-start; gap:10px; color:var(--ink-soft); font-size:.95rem; line-height:1.4;
+  }
+  .gift-items li svg{ width:15px; height:15px; flex-shrink:0; margin-top:3px; color:var(--gold); }
+
   /* ================= THANK YOU ================= */
   .thankyou{ background:rgba(253,251,245,.55); text-align:center; padding-bottom:70px; }
   .thankyou h2{ font-size:clamp(2rem,6vw,2.6rem); margin-bottom:20px; }
@@ -759,6 +812,7 @@
   <button data-target="details"><span class="tip">Event Details</span></button>
   <button data-target="location"><span class="tip">Location</span></button>
   <button data-target="sponsors"><span class="tip">Sponsors</span></button>
+  <button data-target="gifts"><span class="tip">Gifts</span></button>
   <button data-target="rsvp"><span class="tip">RSVP</span></button>
   <button data-target="guestbook"><span class="tip">Guestbook</span></button>
   <button data-target="thankyou"><span class="tip">Thank You</span></button>
@@ -1128,6 +1182,39 @@
   </div>
 </section>
 
+<!-- ========================= GIFT SUGGESTIONS ========================= -->
+<section class="gifts" id="gifts">
+  <div class="section-frame" aria-hidden="true">
+    <svg class="sf-corner sf-tl" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+    <svg class="sf-corner sf-tr" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+    <svg class="sf-corner sf-bl" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+    <svg class="sf-corner sf-br" viewBox="0 0 60 60"><use href="#floralSpray"/></svg>
+  </div>
+  <div class="wave-top">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+      <path d="M0,50 C220,95 460,10 700,50 C940,88 1180,15 1440,48 L1440,0 L0,0 Z" fill="var(--butter)" opacity=".6"/>
+      <path d="M0,60 C240,20 480,92 720,55 C960,18 1200,88 1440,58 L1440,0 L0,0 Z" fill="var(--butter)"/>
+    </svg>
+  </div>
+  <svg class="decor-icon gd-star" viewBox="0 0 24 24" style="width:16px;top:12%;left:9%" fill="var(--gold)"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg>
+  <svg class="decor-icon" viewBox="0 0 24 24" style="width:20px;bottom:12%;right:8%" fill="var(--lavender-deep)"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 20.5 12.5 18 16.65 12 21 12 21z"/></svg>
+  <svg class="mini-floral" viewBox="0 0 60 60" style="bottom:-8px;left:-8px;transform:scaleY(-1)"><use href="#floralSpray"/></svg>
+  <div class="container">
+    <div class="eyebrow-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M20 12v9H4v-9M2 7h20v5H2V7zM12 7v14M12 7c-1.7-3-6.5-3-6.5 0S10.3 10 12 7zM12 7c1.7-3 6.5-3 6.5 0S13.7 10 12 7z"/></svg>
+      <span>Just a thought</span>
+    </div>
+    <h2 class="section-title">Gift Suggestions</h2>
+    <p class="section-sub">Your presence is the only gift we're asking for — but if you'd love to bring something for Keziah, here are a few brands and ideas we adore.</p>
+
+    <!-- Brands are generated from the giftBrands list in the script near the bottom
+         of the page. Edit that list to add, remove, or restock ideas per brand, and
+         drop matching logo images (gift-logo1.jpg, gift-logo2.jpg, ...) next to this
+         file — until a logo is added, a soft gift-box icon is shown instead. -->
+    <div class="gift-grid" id="giftGrid"></div>
+  </div>
+</section>
+
 <!-- ========================= RSVP ========================= -->
 <section class="rsvp" id="rsvp">
   <div class="section-frame" aria-hidden="true">
@@ -1420,6 +1507,58 @@
       </div>`;
     galleryGrid.appendChild(item);
   });
+
+  /* ---------------- Gift Suggestions: brand cards with expandable idea lists ----------------
+     Edit this list to add, remove, or restock ideas per brand. Each entry's `logo`
+     should be an image file placed next to this page; if it's missing or fails to
+     load, a soft gift-box icon is shown instead (same pattern as the gallery photos). */
+  const giftBrands = [
+    { name: '[Brand Name 1]', logo: 'gift-logo1.jpg', items: ['[Gift idea 1]', '[Gift idea 2]', '[Gift idea 3]'] },
+    { name: '[Brand Name 2]', logo: 'gift-logo2.jpg', items: ['[Gift idea 1]', '[Gift idea 2]'] },
+    { name: '[Brand Name 3]', logo: 'gift-logo3.jpg', items: ['[Gift idea 1]', '[Gift idea 2]', '[Gift idea 3]'] },
+    { name: '[Brand Name 4]', logo: 'gift-logo4.jpg', items: ['[Gift idea 1]', '[Gift idea 2]'] }
+  ];
+
+  const giftCheckIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l5 5L20 6"/></svg>';
+  const giftBoxIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M20 12v9H4v-9M2 7h20v5H2V7zM12 7v14M12 7c-1.7-3-6.5-3-6.5 0S10.3 10 12 7zM12 7c1.7-3 6.5-3 6.5 0S13.7 10 12 7z"/></svg>';
+
+  const giftGrid = document.getElementById('giftGrid');
+  if (giftGrid) {
+    giftBrands.forEach((brand, i) => {
+      const card = document.createElement('div');
+      card.className = 'gift-card';
+
+      const itemsHtml = brand.items.map(it => `<li>${giftCheckIcon}<span>${it}</span></li>`).join('');
+
+      card.innerHTML = `
+        <div class="gift-logo-wrap">
+          <img src="${brand.logo}" alt="${brand.name}"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="gift-logo-fallback">${giftBoxIcon}</div>
+        </div>
+        <div class="gift-name">${brand.name}</div>
+        <button type="button" class="gift-toggle-btn" aria-expanded="false" aria-controls="giftItems-${i}">
+          <span class="label">View Gift Ideas 🎁</span><span class="chev">▾</span>
+        </button>
+        <div class="gift-items" id="giftItems-${i}">
+          <div class="gift-items-inner">
+            <ul>${itemsHtml}</ul>
+          </div>
+        </div>
+      `;
+
+      const btn = card.querySelector('.gift-toggle-btn');
+      const panel = card.querySelector('.gift-items');
+      const label = card.querySelector('.gift-toggle-btn .label');
+      btn.addEventListener('click', () => {
+        const open = panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(open));
+        label.textContent = open ? 'Hide Gift Ideas' : 'View Gift Ideas 🎁';
+      });
+
+      giftGrid.appendChild(card);
+    });
+  }
 
   /* ---------------- Dot navigation: click + active state ---------------- */
   const dotButtons = document.querySelectorAll('.dot-nav button');
