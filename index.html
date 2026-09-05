@@ -1259,7 +1259,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import {
-    getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, increment
+    getFirestore, doc, onSnapshot, setDoc, increment
   } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -1337,10 +1337,15 @@
       pendingLocal = 0;
       sentUnconfirmed += amount;
       try {
-        await updateDoc(heartDocRef, { count: increment(amount) });
+        // setDoc + merge + increment is safe whether the document exists yet or not —
+        // it never overwrites the existing count, only adds to it.
+        await setDoc(heartDocRef, { count: increment(amount) }, { merge: true });
       } catch (err) {
-        try { await setDoc(heartDocRef, { count: amount }, { merge: true }); }
-        catch (err2) { console.warn('Heart sync failed:', err2); }
+        console.warn('Heart sync failed, will retry:', err);
+        // Put the batch back so it's retried on the next tick instead of being lost
+        // or (worse) overwriting the shared counter.
+        pendingLocal += amount;
+        sentUnconfirmed -= amount;
       }
     }, FLUSH_MS);
 
@@ -1371,10 +1376,6 @@
     }, (err) => {
       console.warn('Heart listener error:', err);
     });
-
-    getDoc(heartDocRef).then((snap) => {
-      if (!snap.exists()) setDoc(heartDocRef, { count: 0 }).catch(() => {});
-    }).catch(() => {});
   }
 </script>
 
