@@ -236,7 +236,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: brightness(1.35) saturate(1.05);
+    filter: brightness(1) saturate(1);
   }
   .entry-gate::after{
     content:''; position:absolute; inset:0; z-index:0;
@@ -296,17 +296,7 @@
     font-family:var(--serif); font-style:italic; color:var(--gold); font-size:1rem; margin-bottom:6px; letter-spacing:.02em;
   }
   .entry-gate-title{ font-size:clamp(1.6rem,6vw,2.15rem); margin-bottom:10px; color:var(--ink); }
-  .entry-gate-sub{ color:var(--ink-soft); font-size:.95rem; margin-bottom:28px; line-height:1.55; }
-  .entry-gate-btn{
-    display:inline-flex; align-items:center; gap:9px; justify-content:center;
-    background:linear-gradient(135deg, var(--gold), var(--butter-deep)); color:var(--white); border:none;
-    padding:15px 30px; border-radius:40px; font-family:var(--sans); font-weight:700; font-size:.98rem;
-    cursor:pointer; box-shadow:0 12px 26px rgba(199,154,75,.4);
-    transition:transform .3s ease, box-shadow .3s ease;
-    -webkit-tap-highlight-color:transparent; touch-action:manipulation;
-  }
-  .entry-gate-btn:hover{ transform:translateY(-2px); box-shadow:0 16px 32px rgba(199,154,75,.48); }
-  .entry-gate-btn:active{ transform:translateY(0) scale(.97); }
+  .entry-gate-sub{ color:var(--ink-soft); font-size:.95rem; margin-bottom:6px; line-height:1.55; }
   @media (max-width:420px){
     .entry-gate-card{ border-radius:32px; }
   }
@@ -315,28 +305,43 @@
     .entry-gate-note{ animation:none; }
   }
 
-  /* ---- envelope-opening animation: plays once, between "Open Invitation" and the reveal ---- */
-  .entry-gate-bloom{
-    position:absolute; inset:0; z-index:3;
-    display:flex; align-items:center; justify-content:center;
-    opacity:0; pointer-events:none; transition:opacity .35s ease;
+  /* ---- the envelope itself IS the "open invitation" control — tap/click it directly.
+     No extra button, no extra screen: this is the very first thing guests see, and
+     tapping it plays the opening animation and reveals the invitation right after. ---- */
+  .envelope-trigger{
+    position:relative; display:block; margin:22px auto 4px; padding:18px;
+    background:none; border:none; cursor:pointer;
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+    transition:transform .35s cubic-bezier(.22,.68,.36,1);
   }
-  .entry-gate-bloom.is-active{ opacity:1; }
+  .envelope-trigger:hover{ transform:translateY(-3px) scale(1.015); }
+  .envelope-trigger:active{ transform:translateY(0) scale(.98); }
+  .envelope-trigger:focus-visible{ outline:2px solid var(--gold); outline-offset:6px; border-radius:20px; }
+  .envelope-trigger.is-active{ pointer-events:none; transform:none; }
+  .envelope-hint{
+    display:block; margin-top:2px; font-size:.82rem; color:var(--ink-soft);
+    opacity:.85; animation:egHintPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes egHintPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+  .envelope-trigger.is-active + .envelope-hint,
+  .envelope-trigger.is-active ~ .envelope-hint{ opacity:0; transition:opacity .3s ease; }
 
   /* the envelope itself: a flat back/pocket, a letter that rises out of it, and a
      hinged flap on top that folds open — all pure CSS transform/opacity, so it stays
      smooth on mobile with no layout thrashing */
   .envelope{
-    position:relative; width:clamp(200px,58vw,300px); aspect-ratio:200/130;
+    position:relative; width:clamp(190px,56vw,280px); aspect-ratio:200/130;
     filter:drop-shadow(0 14px 26px rgba(74,63,53,.20));
+    transition:filter .35s ease;
   }
+  .envelope-trigger:hover .envelope{ filter:drop-shadow(0 18px 32px rgba(74,63,53,.26)); }
   .envelope-back{ position:relative; z-index:1; display:block; width:100%; height:100%; }
   .envelope-letter{
     position:absolute; left:14%; top:16%; width:72%; z-index:2;
     display:block; opacity:0; transform:scale(.92);
     transform-origin:50% 100%;
   }
-  .entry-gate-bloom.is-active .envelope-letter{
+  .envelope-trigger.is-active .envelope-letter{
     animation: envLetterRise .75s cubic-bezier(.22,.68,.36,1) forwards .5s;
   }
   @keyframes envLetterRise{
@@ -352,14 +357,14 @@
     transform-origin:50% 0%; transform:rotateX(0deg);
     backface-visibility:hidden; will-change:transform;
   }
-  .entry-gate-bloom.is-active .envelope-flap{
+  .envelope-trigger.is-active .envelope-flap{
     animation: envFlapOpen .65s cubic-bezier(.5,0,.15,1) forwards;
   }
   @keyframes envFlapOpen{
     0%{ transform:rotateX(0deg); }
     100%{ transform:rotateX(-155deg); }
   }
-  .entry-gate-bloom.is-active .envelope-seal{
+  .envelope-trigger.is-active .envelope-seal{
     animation: envSealFade .3s ease forwards;
   }
   @keyframes envSealFade{
@@ -372,7 +377,7 @@
     position:absolute; width:10px; height:10px; border-radius:50% 0 50% 50%;
     opacity:0; pointer-events:none; z-index:4;
   }
-  .entry-gate-bloom.is-active .gate-petal{ animation: gatePetalFall 1.9s ease-in forwards; }
+  .envelope-trigger.is-active .gate-petal{ animation: gatePetalFall 1.9s ease-in forwards; }
   @keyframes gatePetalFall{
     0%{ opacity:0; transform:translateY(0) rotate(0deg) scale(.7); }
     15%{ opacity:.9; }
@@ -383,6 +388,7 @@
     .envelope-flap{ transform:rotateX(-155deg) !important; }
     .envelope-letter{ opacity:1 !important; top:-10% !important; transform:scale(1) !important; }
     .envelope-seal{ opacity:0 !important; }
+    .envelope-hint{ animation:none; }
   }
 
   /* ---- gentle fade + slight zoom for the invitation itself once the gate opens ---- */
@@ -979,44 +985,43 @@
     </svg>
     <div class="entry-gate-eyebrow">You're Invited</div>
     <h1 class="entry-gate-title">Keziah's Christening</h1>
-    <p class="entry-gate-sub">Tap below to open your invitation<br>with a little lullaby&nbsp;&hearts;</p>
-    <button type="button" class="entry-gate-btn" id="openInvitationBtn">Open Invitation 💌</button>
-  </div>
-
-  <!-- plays once, right after the button is tapped, then the invitation fades in:
-       the envelope's flap folds open, the letter rises out, a few petals scatter,
-       and then the whole gate dissolves into the invitation underneath. -->
-  <div class="entry-gate-bloom" id="entryGateBloom" aria-hidden="true">
-    <span class="gate-petal" style="left:16%; top:20%; background:var(--blush-deep); animation-delay:.1s;"></span>
-    <span class="gate-petal" style="left:76%; top:16%; background:var(--lavender-deep); animation-delay:.4s;"></span>
-    <span class="gate-petal" style="left:50%; top:8%; background:var(--butter-deep); animation-delay:.25s;"></span>
-    <span class="gate-petal" style="left:84%; top:28%; background:var(--blush-deep); animation-delay:.6s;"></span>
-    <span class="gate-petal" style="left:10%; top:32%; background:var(--sky-deep); animation-delay:.75s;"></span>
-    <div class="envelope">
-      <!-- back of the envelope: the paper pocket, with its fold-seams -->
-      <svg class="envelope-back" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
-        <rect x="4" y="24" width="192" height="102" rx="14" fill="var(--ivory)" stroke="var(--gold-soft)" stroke-width="2"/>
-        <path d="M6 26 L100 88 L194 26" fill="none" stroke="var(--gold-soft)" stroke-width="2" opacity=".85"/>
-        <path d="M6 124 L74 68" stroke="var(--gold-soft)" stroke-width="1.4" opacity=".4"/>
-        <path d="M194 124 L126 68" stroke="var(--gold-soft)" stroke-width="1.4" opacity=".4"/>
-      </svg>
-      <!-- the little letter card, tucked inside until it rises -->
-      <svg class="envelope-letter" viewBox="0 0 160 96" xmlns="http://www.w3.org/2000/svg">
-        <rect x="3" y="3" width="154" height="90" rx="10" fill="var(--white)" stroke="var(--blush-deep)" stroke-width="1.5"/>
-        <path d="M26 30 h108 M26 46 h108 M26 62 h74" stroke="var(--ink-soft)" stroke-width="3" stroke-linecap="round" opacity=".4"/>
-        <path d="M80 78c4.5-7 15-7 15 1c0 6-15 13-15 13s-15-7-15-13c0-8 10.5-8 15-1Z" fill="var(--blush-deep)" opacity=".85"/>
-      </svg>
-      <!-- the hinged top flap, closed at rest and folding open on tap -->
-      <div class="envelope-flap-wrap">
-        <svg class="envelope-flap" viewBox="0 0 200 66" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 66 L100 4 L196 66 Z" fill="var(--blush)" stroke="var(--gold-soft)" stroke-width="2"/>
-          <g class="envelope-seal">
-            <circle cx="100" cy="42" r="12" fill="var(--gold)"/>
-            <path d="M100 36c3-5 10-5 10 1c0 5-10 11-10 11s-10-6-10-11c0-6 7-6 10-1Z" fill="var(--ivory)"/>
-          </g>
+    <!-- The envelope IS the "open invitation" control — no separate button, no extra
+         screen. Tapping/clicking it directly plays the opening animation (flap folds
+         open, letter rises with a soft fade + zoom, petals scatter) and the invitation
+         underneath fades in right after. -->
+    <button type="button" class="envelope-trigger" id="openInvitationBtn" aria-label="Open the invitation">
+      <span class="gate-petal" style="left:16%; top:20%; background:var(--blush-deep); animation-delay:.1s;"></span>
+      <span class="gate-petal" style="left:76%; top:16%; background:var(--lavender-deep); animation-delay:.4s;"></span>
+      <span class="gate-petal" style="left:50%; top:8%; background:var(--butter-deep); animation-delay:.25s;"></span>
+      <span class="gate-petal" style="left:84%; top:28%; background:var(--blush-deep); animation-delay:.6s;"></span>
+      <span class="gate-petal" style="left:10%; top:32%; background:var(--sky-deep); animation-delay:.75s;"></span>
+      <div class="envelope">
+        <!-- back of the envelope: the paper pocket, with its fold-seams -->
+        <svg class="envelope-back" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="24" width="192" height="102" rx="14" fill="var(--ivory)" stroke="var(--gold-soft)" stroke-width="2"/>
+          <path d="M6 26 L100 88 L194 26" fill="none" stroke="var(--gold-soft)" stroke-width="2" opacity=".85"/>
+          <path d="M6 124 L74 68" stroke="var(--gold-soft)" stroke-width="1.4" opacity=".4"/>
+          <path d="M194 124 L126 68" stroke="var(--gold-soft)" stroke-width="1.4" opacity=".4"/>
         </svg>
+        <!-- the little letter card, tucked inside until it rises -->
+        <svg class="envelope-letter" viewBox="0 0 160 96" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="154" height="90" rx="10" fill="var(--white)" stroke="var(--blush-deep)" stroke-width="1.5"/>
+          <path d="M26 30 h108 M26 46 h108 M26 62 h74" stroke="var(--ink-soft)" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+          <path d="M80 78c4.5-7 15-7 15 1c0 6-15 13-15 13s-15-7-15-13c0-8 10.5-8 15-1Z" fill="var(--blush-deep)" opacity=".85"/>
+        </svg>
+        <!-- the hinged top flap, closed at rest and folding open on tap -->
+        <div class="envelope-flap-wrap">
+          <svg class="envelope-flap" viewBox="0 0 200 66" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 66 L100 4 L196 66 Z" fill="var(--blush)" stroke="var(--gold-soft)" stroke-width="2"/>
+            <g class="envelope-seal">
+              <circle cx="100" cy="42" r="12" fill="var(--gold)"/>
+              <path d="M100 36c3-5 10-5 10 1c0 5-10 11-10 11s-10-6-10-11c0-6 7-6 10-1Z" fill="var(--ivory)"/>
+            </g>
+          </svg>
+        </div>
       </div>
-    </div>
+    </button>
+    <span class="envelope-hint">Tap the envelope 💌</span>
   </div>
 </div>
 
@@ -1697,8 +1702,6 @@
   (function(){
     const gate = document.getElementById('entryGate');
     const openBtn = document.getElementById('openInvitationBtn');
-    const card = gate ? gate.querySelector('.entry-gate-card') : null;
-    const bloom = document.getElementById('entryGateBloom');
     const hero = document.getElementById('hero');
     const music = document.getElementById('bgMusic');
     const toggle = document.getElementById('musicToggle');
@@ -1722,12 +1725,12 @@
       }
       if (toggle) toggle.classList.add('is-visible');
 
-      // Step 1 — the card steps aside and a soft flower blooms in its place.
-      if (card) card.classList.add('is-leaving');
-      if (bloom) requestAnimationFrame(() => bloom.classList.add('is-active'));
+      // Step 1 — the envelope itself plays its opening animation right where it is:
+      // the flap folds open, the letter rises with a soft fade + zoom, petals scatter.
+      requestAnimationFrame(() => openBtn.classList.add('is-active'));
 
-      // Step 2 — once the bloom has played, the gate dissolves and the invitation
-      // gently fades/slides into view underneath it.
+      // Step 2 — once the envelope has finished opening, the whole gate dissolves and
+      // the invitation gently fades/zooms into view underneath it.
       const revealDelay = prefersReducedMotion ? 150 : 1400;
       setTimeout(() => {
         document.body.classList.remove('gate-locked');
