@@ -44,6 +44,9 @@
                                  "Open Invitation 💌" simply reveals the page
                                  silently — no error, and the 🎵 button just
                                  won't have anything to play yet.
+  10. EDIT MODE → open the page with ?edit at the end of the link to change every text,
+     date/countdown, map link, photo (cover, baby, gallery, gift logos), the Ninong/Ninang
+     list, gift brands and section backgrounds without touching the code. See EDIT-MODE.md.
   The poster art itself (poster.png) is untouched — do not edit it.
   ══════════════════════════════════════════════════════════════════
 -->
@@ -1142,13 +1145,32 @@ section>.container::-webkit-scrollbar{display:none}
 .entry-gate[data-custom-bg]::before{background-image:var(--bg)!important;background-color:var(--bgc)!important;background-size:cover!important;background-position:center!important}
 .entry-gate[data-custom-bg="fit"]::before{background-size:auto 100%!important}
 #bgEditFab{position:fixed;right:14px;bottom:14px;z-index:20000;width:52px;height:52px;border-radius:50%;border:1px solid var(--gold);background:#fff;font-size:1.3rem;box-shadow:0 8px 22px rgba(0,0,0,.25);cursor:pointer}
-#bgEditPanel{position:fixed;right:14px;bottom:74px;z-index:20000;width:min(92vw,360px);max-height:72vh;overflow:auto;background:#fffdf8;border:1px solid var(--gold);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);padding:16px;font-family:var(--sans);font-size:.8rem;color:var(--ink);display:none}
+#bgEditPanel{position:fixed;right:14px;bottom:74px;z-index:20000;width:min(94vw,440px);max-height:80vh;overflow:auto;background:#fffdf8;border:1px solid var(--gold);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);padding:16px;font-family:var(--sans);font-size:.8rem;color:var(--ink);display:none}
 #bgEditPanel h4{font-family:var(--display);font-size:1.05rem;margin-bottom:4px}
 #bgEditPanel .row{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid rgba(184,145,79,.25)}
 #bgEditPanel .nm{flex:1;font-weight:600}
 #bgEditPanel .dot{width:9px;height:9px;border-radius:50%;background:#ccc}#bgEditPanel .dot.on{background:#5FBF7A}
 #bgEditPanel button,#bgEditPanel select{font:inherit;padding:6px 10px;border:1px solid var(--gold);border-radius:8px;background:#fff;cursor:pointer}
 #bgEditPanel .st{margin-top:10px;color:var(--ink-soft);min-height:1.2em}
+
+/* hero cover picture (replaces the video when uploaded in edit mode) */
+.poster-frame .video-wrap .hero-cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;border-radius:0}
+.poster-frame .video-wrap .hero-cover-img[hidden]{display:none}
+/* edit-mode panel: tabs + fields */
+#bgEditPanel .ed-tabs{display:flex;gap:4px;flex-wrap:wrap;margin:10px 0 6px}
+#bgEditPanel .ed-tabs button{padding:5px 9px;font-size:.74rem}
+#bgEditPanel .ed-tabs button.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+#bgEditPanel .ed-group{margin:14px 0 4px;font-weight:700;color:var(--gold-text,#8a6a2f);text-transform:uppercase;letter-spacing:.08em;font-size:.68rem}
+#bgEditPanel .ed-f{display:block;margin:7px 0}
+#bgEditPanel .ed-f span{display:block;margin-bottom:3px;color:var(--ink-soft)}
+#bgEditPanel input[type=text],#bgEditPanel input[type=url],#bgEditPanel input[type=datetime-local],#bgEditPanel textarea{width:100%;font:inherit;padding:7px 9px;border:1px solid rgba(184,145,79,.55);border-radius:8px;background:#fff;color:var(--ink)}
+#bgEditPanel textarea{min-height:64px;resize:vertical}
+#bgEditPanel .ed-note{color:var(--ink-soft);margin:6px 0;line-height:1.4}
+#bgEditPanel .thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid rgba(184,145,79,.4);background:#eee;flex-shrink:0}
+#bgEditPanel .ed-card{border:1px solid rgba(184,145,79,.4);border-radius:12px;padding:10px;margin:10px 0;background:#fff}
+#bgEditPanel .ed-foot{position:sticky;bottom:-16px;background:#fffdf8;padding:10px 0 4px;margin-top:10px;border-top:1px solid rgba(184,145,79,.3)}
+#bgEditPanel .ed-save{width:100%;background:var(--gold);color:#fff;border-color:var(--gold);font-weight:600;padding:9px}
+#bgEditPanel .ed-save.dirty{box-shadow:0 0 0 3px rgba(95,191,122,.45)}
 </style>
 </head>
 <body class="gate-locked">
@@ -1168,8 +1190,8 @@ section>.container::-webkit-scrollbar{display:none}
     <svg class="entry-gate-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
       <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
     </svg>
-    <div class="entry-gate-eyebrow">You're Invited</div>
-    <h1 class="entry-gate-title">Keziah's Christening</h1>
+    <div class="entry-gate-eyebrow" data-c="gateEyebrow">You're Invited</div>
+    <h1 class="entry-gate-title" data-c="eventTitle">Keziah's Christening</h1>
     <!-- The envelope IS the "open invitation" control — no separate button, no extra
          screen. Tapping/clicking it directly plays the opening animation (flap folds
          open, letter rises with a soft fade + zoom, petals scatter) and the invitation
@@ -1313,6 +1335,7 @@ section>.container::-webkit-scrollbar{display:none}
         aria-label="Video invitation for Keziah's Christening, December 20 2026, 1:00 PM, Las Piñas City">
         <source src="hero-video.mp4" type="video/mp4">
       </video>
+      <img class="hero-cover-img" id="heroCoverImg" alt="Keziah" hidden>
 
       <!-- ========== Live heart reactions (TikTok-style, synced via Firebase) ========== -->
       <div class="heart-reaction-layer" aria-hidden="false">
@@ -1326,7 +1349,7 @@ section>.container::-webkit-scrollbar{display:none}
         </button>
       </div>
     </div>
-    <div class="video-caption">Keziah's Christening &middot; December 20, 2026</div>
+    <div class="video-caption"><span data-c="eventTitle">Keziah's Christening</span> &middot; <span data-c="dateText">December 20, 2026</span></div>
   </div>
   <div class="hero-scroll"><span>Scroll to open</span><div class="chevron"></div></div>
 </section>
@@ -1427,7 +1450,7 @@ section>.container::-webkit-scrollbar{display:none}
           <svg viewBox="0 0 24 32" fill="none" stroke="var(--gold)" stroke-width="1.4"><path d="M12 1v30M4 9h16"/></svg>
         </div>
 
-        <h3 class="cd-heading">We Can't Wait to Celebrate with You.</h3>
+        <h3 class="cd-heading" data-c="cdHeading">We Can't Wait to Celebrate with You.</h3>
         <div class="cd-flourish" aria-hidden="true">
           <span></span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 20.5 12.5 18 16.65 12 21 12 21z"/></svg>
@@ -1459,7 +1482,7 @@ section>.container::-webkit-scrollbar{display:none}
       <span>Little moments</span>
     </div>
     <h2 class="section-title">Baby Photo Gallery</h2>
-    <p class="section-sub">A few of our favorite snapshots so far — swap these placeholders for your own photos any time.</p>
+    <p class="section-sub" data-c="gallerySub">A few of our favorite snapshots so far — swap these placeholders for your own photos any time.</p>
     <div class="gallery-grid" id="galleryGrid">
       <!-- Each item: replace the <svg> with <img src="photo1.jpg" alt="..."> -->
     </div>
@@ -1478,19 +1501,19 @@ section>.container::-webkit-scrollbar{display:none}
     <div class="detail-card">
       <div class="detail-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-        <div><h4>Date</h4><p>December 20, 2026</p></div>
+        <div><h4>Date</h4><p data-c="dateText">December 20, 2026</p></div>
       </div>
       <div class="detail-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 21c4-4 7-7.5 7-11a7 7 0 10-14 0c0 3.5 3 7 7 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
-        <div><h4>Ceremony</h4><p>[Church Name] &middot; 1:00 PM</p></div>
+        <div><h4>Ceremony</h4><p><span data-c="churchName">[Church Name]</span> &middot; <span data-c="ceremonyTime">1:00 PM</span></p></div>
       </div>
       <div class="detail-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 21h16M6 21V10a2 2 0 012-2h8a2 2 0 012 2v11M9 21v-5h6v5"/><path d="M12 8V4M9 4h6"/></svg>
-        <div><h4>Reception</h4><p>[Reception Venue Name] &middot; 2:30 PM onwards</p></div>
+        <div><h4>Reception</h4><p><span data-c="receptionName">[Reception Venue Name]</span> &middot; <span data-c="receptionTime">2:30 PM onwards</span></p></div>
       </div>
       <div class="detail-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 21V8a1 1 0 011-1h14a1 1 0 011 1v13M9 21v-6h6v6"/></svg>
-        <div><h4>Attire</h4><p>[e.g., Garden casual, soft pastels]</p></div>
+        <div><h4>Attire</h4><p data-c="attire">[e.g., Garden casual, soft pastels]</p></div>
       </div>
     </div>
   </div>
@@ -1512,9 +1535,9 @@ section>.container::-webkit-scrollbar{display:none}
         <div class="loc-label">Ceremony</div>
         <div class="detail-row">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 9l9-6 9 6v11a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1z"/></svg>
-          <div><h4>Address</h4><p>[Street], Las Piñas City</p></div>
+          <div><h4>Address</h4><p data-c="churchAddress">[Street], Las Piñas City</p></div>
         </div>
-        <a class="map-btn" href="https://www.google.com/maps/search/?api=1&query=Las+Pi%C3%B1as+City+Church" target="_blank" rel="noopener">
+        <a class="map-btn" data-map="church" href="https://www.google.com/maps/search/?api=1&query=Las+Pi%C3%B1as+City+Church" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21c4-4 7-7.5 7-11a7 7 0 10-14 0c0 3.5 3 7 7 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
           Get Directions
         </a>
@@ -1523,9 +1546,9 @@ section>.container::-webkit-scrollbar{display:none}
         <div class="loc-label">Reception</div>
         <div class="detail-row">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 21c4-4 7-7.5 7-11a7 7 0 10-14 0c0 3.5 3 7 7 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
-          <div><h4>Address</h4><p>[Reception Venue Address]</p></div>
+          <div><h4>Address</h4><p data-c="receptionAddress">[Reception Venue Address]</p></div>
         </div>
-        <a class="map-btn" href="https://www.google.com/maps/search/?api=1&query=%5BReception+Venue+Name%5D" target="_blank" rel="noopener">
+        <a class="map-btn" data-map="reception" href="https://www.google.com/maps/search/?api=1&query=%5BReception+Venue+Name%5D" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21c4-4 7-7.5 7-11a7 7 0 10-14 0c0 3.5 3 7 7 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
           Get Directions
         </a>
@@ -1545,7 +1568,7 @@ section>.container::-webkit-scrollbar{display:none}
       <span>Chosen with love</span>
     </div>
     <h2 class="section-title">Principal Sponsors</h2>
-    <p class="section-sub">Dear Ninongs and Ninangs — tap your name below, then let us know if we'll see you at the church and at the reception.</p>
+    <p class="section-sub" data-c="sponsorsSub">Dear Ninongs and Ninangs — tap your name below, then let us know if we'll see you at the church and at the reception.</p>
 
     <!-- Name cards are generated from the sponsorsData list in the script near the
          bottom of the page. Edit that list to add, remove, or rename sponsors. -->
@@ -1603,7 +1626,7 @@ section>.container::-webkit-scrollbar{display:none}
       <span>Just a thought</span>
     </div>
     <h2 class="section-title">Gift Suggestions</h2>
-    <p class="section-sub">Your presence is the only gift we're asking for — but if you'd love to bring something for Keziah, here are a few brands and ideas we adore.</p>
+    <p class="section-sub" data-c="giftsSub">Your presence is the only gift we're asking for — but if you'd love to bring something for Keziah, here are a few brands and ideas we adore.</p>
 
     <!-- Brands are generated from the giftBrands list in the script near the bottom
          of the page. Edit that list to add, remove, or restock ideas per brand, and
@@ -1624,7 +1647,7 @@ section>.container::-webkit-scrollbar{display:none}
       <span>Kindly reply</span>
     </div>
     <h2 class="section-title">RSVP</h2>
-    <p class="section-sub">Please let us know if you can make it by [RSVP deadline date] so we can prepare a seat just for you.</p>
+    <p class="section-sub">Please let us know if you can make it by <span data-c="rsvpDeadline">[RSVP deadline date]</span> so we can prepare a seat just for you.</p>
 
     <form class="rsvp-form" id="rsvpForm">
       <div class="field">
@@ -1702,9 +1725,9 @@ section>.container::-webkit-scrollbar{display:none}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 20.5 12.5 18 16.65 12 21 12 21z"/></svg>
     </div>
     <h2>Thank You</h2>
-    <p>To our family and friends who have loved us and prayed for us — thank you for being part of this milestone. Your presence is the best gift you can bring to Keziah's special day.</p>
-    <p>We look forward to celebrating with you.</p>
-    <div class="signature">With all our love,<br>The [Family Last Name] Family</div>
+    <p data-c="thank1">To our family and friends who have loved us and prayed for us — thank you for being part of this milestone. Your presence is the best gift you can bring to Keziah's special day.</p>
+    <p data-c="thank2">We look forward to celebrating with you.</p>
+    <div class="signature">With all our love,<br><span data-c="familyName">The [Family Last Name] Family</span></div>
   </div>
 </section>
 
@@ -1916,30 +1939,38 @@ section>.container::-webkit-scrollbar{display:none}
      should be an image file placed next to this page; if it's missing or fails to
      load, a soft gift-box icon is shown instead (same pattern as the gallery photos). */
   const giftBrands = [
-    { name: '[Brand Name 1]', logo: 'gift-logo1.jpg', items: ['[Gift idea 1]', '[Gift idea 2]', '[Gift idea 3]'] },
-    { name: '[Brand Name 2]', logo: 'gift-logo2.jpg', items: ['[Gift idea 1]', '[Gift idea 2]'] },
-    { name: '[Brand Name 3]', logo: 'gift-logo3.jpg', items: ['[Gift idea 1]', '[Gift idea 2]', '[Gift idea 3]'] },
-    { name: '[Brand Name 4]', logo: 'gift-logo4.jpg', items: ['[Gift idea 1]', '[Gift idea 2]'] }
+    { id: 'd1', name: '[Brand Name 1]', logo: 'gift-logo1.jpg', items: ['[Gift idea 1]', '[Gift idea 2]', '[Gift idea 3]'] },
+    { id: 'd2', name: '[Brand Name 2]', logo: 'gift-logo2.jpg', items: ['[Gift idea 1]', '[Gift idea 2]'] },
+    { id: 'd3', name: '[Brand Name 3]', logo: 'gift-logo3.jpg', items: ['[Gift idea 1]', '[Gift idea 2]', '[Gift idea 3]'] },
+    { id: 'd4', name: '[Brand Name 4]', logo: 'gift-logo4.jpg', items: ['[Gift idea 1]', '[Gift idea 2]'] }
   ];
+  window.__giftDefaults = giftBrands;
+  const escHtml = (t) => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   const giftCheckIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l5 5L20 6"/></svg>';
   const giftBoxIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M20 12v9H4v-9M2 7h20v5H2V7zM12 7v14M12 7c-1.7-3-6.5-3-6.5 0S10.3 10 12 7zM12 7c1.7-3 6.5-3 6.5 0S13.7 10 12 7z"/></svg>';
 
   const giftGrid = document.getElementById('giftGrid');
-  if (giftGrid) {
-    giftBrands.forEach((brand, i) => {
+  let currentGiftBrands = giftBrands;
+  function renderGifts(brands){
+    if (!giftGrid) return;
+    currentGiftBrands = brands;
+    giftGrid.innerHTML = '';
+    brands.forEach((brand, i) => {
       const card = document.createElement('div');
       card.className = 'gift-card';
 
-      const itemsHtml = brand.items.map(it => `<li>${giftCheckIcon}<span>${it}</span></li>`).join('');
+      const itemsHtml = (brand.items || []).map(it => `<li>${giftCheckIcon}<span>${escHtml(it)}</span></li>`).join('');
+      const logoHtml = brand.logo
+        ? `<img src="${escHtml(brand.logo)}" alt="${escHtml(brand.name)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="gift-logo-fallback">${giftBoxIcon}</div>`
+        : `<div class="gift-logo-fallback" style="display:flex">${giftBoxIcon}</div>`;
 
       card.innerHTML = `
         <div class="gift-logo-wrap">
-          <img src="${brand.logo}" alt="${brand.name}"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div class="gift-logo-fallback">${giftBoxIcon}</div>
+          ${logoHtml}
         </div>
-        <div class="gift-name">${brand.name}</div>
+        <div class="gift-name">${escHtml(brand.name)}</div>
         <button type="button" class="gift-toggle-btn" aria-expanded="false" aria-controls="giftItems-${i}">
           <span class="label">View Gift Ideas 🎁</span><span class="chev">▾</span>
         </button>
@@ -1962,6 +1993,24 @@ section>.container::-webkit-scrollbar{display:none}
       giftGrid.appendChild(card);
     });
   }
+  renderGifts(giftBrands);
+  window.__renderGifts = renderGifts;
+  // swap one brand's logo for an uploaded image (or restore the original when src is null)
+  window.__setGiftLogo = function(index, src){
+    const wrap = giftGrid && giftGrid.children[index] && giftGrid.children[index].querySelector('.gift-logo-wrap');
+    if (!wrap) return;
+    let img = wrap.querySelector('img');
+    const fb = wrap.querySelector('.gift-logo-fallback');
+    const def = currentGiftBrands[index] && currentGiftBrands[index].logo;
+    const url = src || def;
+    if (url){
+      if (!img){ img = document.createElement('img'); img.alt = currentGiftBrands[index].name || ''; img.onerror = () => { img.style.display='none'; if (fb) fb.style.display='flex'; }; wrap.prepend(img); }
+      img.style.display = ''; if (fb) fb.style.display = 'none'; img.src = url;
+    } else {
+      if (img) img.remove();
+      if (fb) fb.style.display = 'flex';
+    }
+  };
 
   /* ---------------- Dot navigation: click + active state ---------------- */
   const dotButtons = document.querySelectorAll('.dot-nav button');
@@ -1986,7 +2035,7 @@ section>.container::-webkit-scrollbar{display:none}
 
   /* ---------------- Live countdown ---------------- */
   // COUNTDOWN TARGET — set to the christening date & time shown on the poster.
-  const countdownTarget = new Date('2026-12-20T13:00:00');
+  let countdownTarget = new Date('2026-12-20T13:00:00');
 
   const cdDays = document.getElementById('cdDays');
   const cdHours = document.getElementById('cdHours');
@@ -2015,8 +2064,20 @@ section>.container::-webkit-scrollbar{display:none}
     cdMins.textContent = pad(mins);
     cdSecs.textContent = pad(secs);
   }
+  let countdownInterval = null;
   tickCountdown();
-  const countdownInterval = setInterval(tickCountdown, 1000);
+  countdownInterval = setInterval(tickCountdown, 1000);
+  // used by edit mode (and the saved content) to change the date/time live
+  window.__setCountdown = function(str){
+    const d = new Date(str);
+    if (isNaN(d)) return;
+    countdownTarget = d;
+    cdGrid.style.display = '';
+    cdDoneMsg.style.display = 'none';
+    clearInterval(countdownInterval);
+    tickCountdown();
+    if (countdownTarget - new Date() > 0) countdownInterval = setInterval(tickCountdown, 1000);
+  };
 
   /* ---------------- Main RSVP form now saves to Firebase — see the
      type="module" script near the bottom, next to the guestbook logic. ---------------- */
@@ -2449,7 +2510,11 @@ section>.container::-webkit-scrollbar{display:none}
       if (selectedSponsor && selectedSponsor.slug === slug) closeSponsorPanel();
     }
 
-    sponsorsData.forEach((sp) => {
+    const escH = (t) => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function renderSponsors(list){
+    closeSponsorPanel();
+    sponsorGrid.innerHTML = '';
+    list.forEach((sp) => {
       const slug = slugifySponsor(sp.name);
       const initial = sp.name.replace(/[\[\]]/g, '').trim().charAt(0).toUpperCase() || '?';
 
@@ -2461,8 +2526,8 @@ section>.container::-webkit-scrollbar{display:none}
       card.innerHTML = `
         <span class="sponsor-avatar" aria-hidden="true">${initial}</span>
         <span class="sponsor-info">
-          <span class="sponsor-name">${sp.name}</span>
-          <span class="sponsor-role">${sp.role}</span>
+          <span class="sponsor-name">${escH(sp.name)}</span>
+          <span class="sponsor-role">${escH(sp.role)}</span>
         </span>
         <span class="sponsor-tag">Responded</span>
         <span class="sponsor-check" aria-hidden="true">
@@ -2484,6 +2549,14 @@ section>.container::-webkit-scrollbar{display:none}
       });
       sponsorGrid.appendChild(card);
     });
+    seenSlugs.forEach((sl) => {
+      const c = sponsorGrid.querySelector(`[data-slug="${sl}"]`);
+      if (c) c.classList.add('responded');
+    });
+    }
+    renderSponsors(sponsorsData);
+    window.__sponsorDefaults = sponsorsData;
+    window.__renderSponsors = renderSponsors;
 
     sponsorBack.addEventListener('click', closeSponsorPanel);
 
@@ -2543,88 +2616,350 @@ section>.container::-webkit-scrollbar{display:none}
 
 <script type="module">
 /* ============ EDIT MODE: open the page with  ?edit  at the end of the link ============
-   Upload a background per section; it is saved to Firestore (collection "siteBackgrounds")
-   so every guest sees it. Change EDIT_PASS below to your own passcode. */
+   Lets you change EVERYTHING on the page: texts/details, date & countdown, maps,
+   photos (cover, baby, gallery, gift logos), Ninong/Ninang list, gift ideas, and
+   section backgrounds. Saved to Firestore so every guest sees it.
+     collection "siteBackgrounds"  -> section backgrounds
+     collection "siteContent"      -> doc "main" (texts + lists), docs "img_<key>" (photos)
+   Change EDIT_PASS below to your own passcode. */
 import { getApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getFirestore, doc, setDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 const EDIT_PASS = 'keziah2026';
 const SECTIONS = [['gate','Gate (envelope)','entryGate'],['hero','Video','hero'],['countdown','Countdown','countdown'],['gallery','Gallery','gallery'],['details','Event Details','details'],['location','Location','location'],['sponsors','Sponsors','sponsors'],['gifts','Gifts','gifts'],['rsvp','RSVP','rsvp'],['guestbook','Guestbook','guestbook'],['thankyou','Thank You','thankyou']];
-const cache = {};
+const DEF_CD = '2026-12-20T13:00';
+const $ = id => document.getElementById(id);
+const safeImg = s => typeof s === 'string' && /^data:image\/(jpeg|png|webp|gif);base64,/.test(s);
+const cache = {};            // section backgrounds
+const imgs = {};             // uploaded photos by key
+let data = { t: {} };        // saved texts + lists
+let dirty = false;
 let db = null; try { db = getFirestore(getApp()); } catch(e){ console.warn(e); }
 
-function apply(id, d){
-  const sec = SECTIONS.find(x => x[0] === id); const el = sec && document.getElementById(sec[2]); if (!el) return;
-  if (!d || !d.img){ el.removeAttribute('data-custom-bg'); el.style.removeProperty('--bg'); el.style.removeProperty('--bgc'); return; }
-  el.style.setProperty('--bg', 'url("' + d.img + '")'); el.style.setProperty('--bgc', d.color || 'transparent');
+/* ---------------------------- apply to the page ---------------------------- */
+function applyBg(id, d){
+  const sec = SECTIONS.find(x => x[0] === id); const el = sec && $(sec[2]); if (!el) return;
+  if (!d || !safeImg(d.img)){ el.removeAttribute('data-custom-bg'); el.style.removeProperty('--bg'); el.style.removeProperty('--bgc'); return; }
+  el.style.setProperty('--bg', 'url("' + d.img + '")'); el.style.setProperty('--bgc', /^rgb\(\d+,\d+,\d+\)$/.test(d.color || '') ? d.color : 'transparent');
   el.setAttribute('data-custom-bg', d.fit === 'fit' ? 'fit' : 'fill');
 }
-// everyone: load the saved backgrounds in realtime
-if (db) onSnapshot(collection(db, 'siteBackgrounds'), snap => {
-  snap.docChanges().forEach(c => { cache[c.doc.id] = c.doc.data(); apply(c.doc.id, c.doc.data()); });
-  if (window.__bgRefresh) window.__bgRefresh();
-}, err => console.warn('Backgrounds not loaded (check Firestore rules):', err.message));
+function applyText(){
+  const t = data.t || {};
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (el.dataset.def === undefined) el.dataset.def = el.textContent;
+    const v = t[el.dataset.c];
+    el.textContent = (typeof v === 'string' && v.trim()) ? v : el.dataset.def;
+  });
+}
+function applyMaps(){
+  const t = data.t || {};
+  document.querySelectorAll('a[data-map]').forEach(a => {
+    if (a.dataset.def === undefined) a.dataset.def = a.getAttribute('href');
+    const kind = a.dataset.map;
+    const link = String(t[kind + 'Map'] || '').trim();
+    const addr = String(t[kind + 'Address'] || '').trim();
+    const name = String(t[kind === 'church' ? 'churchName' : 'receptionName'] || '').trim();
+    if (/^https?:\/\//i.test(link)) a.href = link;
+    else if (addr) a.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((name ? name + ' ' : '') + addr);
+    else a.href = a.dataset.def;
+  });
+}
+function applyCountdown(){ if (window.__setCountdown) window.__setCountdown(data.cd || DEF_CD); }
+let lastSp = '';
+function sponsorList(){
+  if (Array.isArray(data.ninong) || Array.isArray(data.ninang))
+    return [...(data.ninong || []).map(n => ({ name: n, role: 'Ninong' })), ...(data.ninang || []).map(n => ({ name: n, role: 'Ninang' }))];
+  return window.__sponsorDefaults || [];
+}
+function applySponsors(){
+  const l = sponsorList(), s = JSON.stringify(l);
+  if (s === lastSp) return; lastSp = s;
+  if (window.__renderSponsors) window.__renderSponsors(l);
+}
+let lastGifts = '';
+function brandList(){ return Array.isArray(data.gifts) ? data.gifts : (window.__giftDefaults || []); }
+function applyGifts(){
+  const b = brandList(), s = JSON.stringify(b);
+  if (s === lastGifts) return; lastGifts = s;
+  if (window.__renderGifts) window.__renderGifts(b);
+  b.forEach(br => { if (imgs['gift_' + br.id]) applyImage('gift_' + br.id); });
+}
+function setPhoto(im, src, def){
+  if (!im) return;
+  const sib = im.nextElementSibling;
+  im.style.display = ''; if (sib && sib.tagName.toLowerCase() === 'svg') sib.style.display = 'none';
+  im.src = src || def;
+}
+function applyImage(k){
+  const src = safeImg(imgs[k]) ? imgs[k] : null;
+  if (k === 'hero'){
+    const im = $('heroCoverImg'), v = document.querySelector('.poster-frame video'); if (!im) return;
+    if (src){ im.src = src; im.hidden = false; if (v){ v.pause(); v.style.display = 'none'; } }
+    else { im.hidden = true; im.removeAttribute('src'); if (v){ v.style.display = ''; v.play().catch(() => {}); } }
+  } else if (k === 'baby'){
+    setPhoto(document.querySelector('.cd-photo-inner img'), src, 'baby.jpg');
+  } else if (/^gallery[1-8]$/.test(k)){
+    const n = +k.slice(7);
+    setPhoto(document.querySelector('#galleryGrid .gallery-item:nth-child(' + n + ') img'), src, 'photo' + n + '.jpg');
+  } else if (k.startsWith('gift_')){
+    const i = brandList().findIndex(b => 'gift_' + b.id === k);
+    if (i >= 0 && window.__setGiftLogo) window.__setGiftLogo(i, src);
+  }
+}
+function applyAll(){ applyText(); applyMaps(); applyCountdown(); applySponsors(); applyGifts(); }
 
-// editor only
+/* instant first paint from the last saved texts (images follow when Firestore answers) */
+try { const c = JSON.parse(localStorage.getItem('kz_content_v2') || 'null'); if (c && typeof c === 'object') { data = c; if (!data.t) data.t = {}; } } catch(e){}
+applyAll();
+
+/* everyone: load saved backgrounds + content in realtime */
+if (db){
+  onSnapshot(collection(db, 'siteBackgrounds'), snap => {
+    snap.docChanges().forEach(c => { cache[c.doc.id] = c.doc.data(); applyBg(c.doc.id, c.doc.data()); });
+    if (window.__bgRefresh) window.__bgRefresh();
+  }, err => console.warn('Backgrounds not loaded (check Firestore rules):', err.message));
+
+  onSnapshot(collection(db, 'siteContent'), snap => {
+    snap.docChanges().forEach(c => {
+      const id = c.doc.id, d = c.doc.data();
+      if (id === 'main'){
+        if (dirty) return;                       // don't overwrite what the editor is typing
+        data = (d && d.data && typeof d.data === 'object') ? d.data : { t: {} };
+        if (!data.t) data.t = {};
+        applyAll();
+        try { localStorage.setItem('kz_content_v2', JSON.stringify(data)); } catch(e){}
+      } else if (id.startsWith('img_')){
+        const k = id.slice(4); imgs[k] = safeImg(d.img) ? d.img : null; applyImage(k);
+      }
+    });
+    if (window.__edRefresh) window.__edRefresh();
+  }, err => console.warn('Content not loaded (check Firestore rules):', err.message));
+}
+
+/* ------------------------------ editor (only with ?edit) ------------------------------ */
 if (new URLSearchParams(location.search).has('edit')) {
-  const fab = document.createElement('button'); fab.id = 'bgEditFab'; fab.type = 'button'; fab.textContent = '🎨'; fab.setAttribute('aria-label','Edit backgrounds');
-  const panel = document.createElement('div'); panel.id = 'bgEditPanel';
-  panel.innerHTML = '<h4>Backgrounds per page</h4><div>Pumili ng image para sa bawat section. Auto-save ito.</div><div id="bgRows"></div><div class="st" id="bgStatus"></div>';
+  const h = (tag, props, ...kids) => {
+    const e = document.createElement(tag);
+    if (props) for (const [k, v] of Object.entries(props)){
+      if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v;
+      else if (k === 'value') e.value = v; else if (k.startsWith('on')) e[k] = v; else e.setAttribute(k, v);
+    }
+    kids.flat().forEach(c => { if (c != null) e.append(c.nodeType ? c : document.createTextNode(c)); });
+    return e;
+  };
+  const fab = h('button', { id: 'bgEditFab', type: 'button', 'aria-label': 'Edit invitation', text: '🎨' });
+  const panel = h('div', { id: 'bgEditPanel' });
+  const tabsBar = h('div', { class: 'ed-tabs' });
+  const body = h('div');
+  const status = h('div', { class: 'st' });
+  const saveBtn = h('button', { type: 'button', class: 'ed-save', text: '💾 I-save ang mga pagbabago' });
+  const foot = h('div', { class: 'ed-foot' }, saveBtn, status);
+  panel.append(h('h4', { text: 'Edit ang buong invitation' }), h('div', { text: 'Photos at backgrounds: auto-save. Texts, ninong/ninang at gifts: pindutin ang I-save.' }), tabsBar, body, foot);
   document.body.append(fab, panel);
-  const rows = panel.querySelector('#bgRows'), status = panel.querySelector('#bgStatus');
-  let unlocked = false;
   const say = t => status.textContent = t;
+  const markDirty = () => { dirty = true; saveBtn.classList.add('dirty'); say('May hindi pa na-save na pagbabago.'); };
 
-  function compress(file){ return new Promise((res, rej) => {
+  /* --- image compression (kept small so Firestore's 1 MB doc limit is never hit) --- */
+  function compress(file, max = 1600, limit = 900000){ return new Promise((res, rej) => {
     const img = new Image(); const url = URL.createObjectURL(file);
     img.onerror = () => rej(new Error('Hindi mabasa ang image.'));
     img.onload = () => {
-      let max = 1600, q = 0.8, out;
-      for (let i = 0; i < 5; i++){
-        const k = Math.min(1, max / Math.max(img.width, img.height));
+      let m = max, q = 0.82, out;
+      for (let i = 0; i < 7; i++){
+        const k = Math.min(1, m / Math.max(img.width, img.height));
         const c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
         const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(img,0,0,c.width,c.height);
         out = c.toDataURL('image/jpeg', q);
-        if (out.length < 900000){
+        if (out.length < limit){
           const e = x.getImageData(0,0,6,c.height).data, f = x.getImageData(c.width-6,0,6,c.height).data; let r=0,g=0,b=0,n=0;
           for (const a of [e,f]) for (let j=0;j<a.length;j+=4){ r+=a[j]; g+=a[j+1]; b+=a[j+2]; n++; }
           URL.revokeObjectURL(url); return res({ img: out, color: 'rgb('+Math.round(r/n)+','+Math.round(g/n)+','+Math.round(b/n)+')' });
         }
-        max *= 0.82; q -= 0.06;
+        m *= 0.82; q = Math.max(0.5, q - 0.06);
       }
       rej(new Error('Masyadong malaki ang image.'));
     };
     img.src = url;
   }); }
+  const SIZE = { hero: [1400, 520000], baby: [900, 260000], gallery: [1200, 380000], gift: [450, 110000] };
+  const sizeFor = k => SIZE[k.startsWith('gallery') ? 'gallery' : k.startsWith('gift_') ? 'gift' : k] || [1200, 380000];
 
-  async function save(id, data){
-    cache[id] = data; apply(id, data); refresh();
-    try { await setDoc(doc(db, 'siteBackgrounds', id), { img: data.img || null, fit: data.fit || 'fill', color: data.color || null, updatedAt: serverTimestamp() }); say('Na-save ✓ — makikita na ito ng lahat ng bisita.'); }
+  async function saveImg(k, dataUrl){
+    imgs[k] = dataUrl; applyImage(k); refresh();
+    try { await setDoc(doc(db, 'siteContent', 'img_' + k), { img: dataUrl || null, updatedAt: serverTimestamp() }); say('Na-save ✓ — makikita na ito ng lahat ng bisita.'); }
     catch(e){ say('Naka-preview lang sa device mo. Hindi na-save online — i-update ang Firestore rules (tingnan ang EDIT-MODE.md).'); console.warn(e); }
   }
-  function refresh(){
-    rows.innerHTML = '';
+  function photoRow(k, label){
+    const on = safeImg(imgs[k]);
+    const inp = h('input', { type: 'file', accept: 'image/*', hidden: '' });
+    const up = h('button', { type: 'button', text: on ? 'Palitan' : 'Upload', onclick: () => inp.click() });
+    inp.onchange = async () => { if (!inp.files[0]) return; say('Pino-process ang image…');
+      try { const [m, l] = sizeFor(k); const r = await compress(inp.files[0], m, l); await saveImg(k, r.img); } catch(e){ say(e.message); } };
+    const row = h('div', { class: 'row' }, on ? h('img', { class: 'thumb', src: imgs[k], alt: '' }) : h('span', { class: 'dot' }), h('span', { class: 'nm', text: label }), up, inp);
+    if (on) row.append(h('button', { type: 'button', title: 'Ibalik sa original', text: '✕', onclick: () => saveImg(k, null) }));
+    return row;
+  }
+
+  /* --- save texts / lists --- */
+  async function saveMain(){
+    say('Sine-save…');
+    try {
+      await setDoc(doc(db, 'siteContent', 'main'), { data: JSON.parse(JSON.stringify(data)), updatedAt: serverTimestamp() });
+      dirty = false; saveBtn.classList.remove('dirty');
+      try { localStorage.setItem('kz_content_v2', JSON.stringify(data)); } catch(e){}
+      say('Na-save ✓ — makikita na ito ng lahat ng bisita.');
+    } catch(e){ say('Hindi na-save online — i-update ang Firestore rules (tingnan ang EDIT-MODE.md). Naka-preview lang sa device mo.'); console.warn(e); }
+  }
+  saveBtn.onclick = saveMain;
+
+  /* --- tab: Details --- */
+  const GROUPS = [
+    ['Cover / Gate', [['eventTitle','Pamagat ng event (gate at caption ng cover)'],['gateEyebrow','Maliit na text sa gate (You\'re Invited)']]],
+    ['Petsa at Countdown', [['cd','Petsa at oras ng ceremony (para sa countdown)','datetime'],['dateText','Petsa na ipapakita (auto-fill, pwedeng baguhin)'],['cdHeading','Pamagat sa countdown']]],
+    ['Ceremony (simbahan)', [['churchName','Pangalan ng simbahan'],['ceremonyTime','Oras ng ceremony']]],
+    ['Reception', [['receptionName','Pangalan ng venue'],['receptionTime','Oras ng reception']]],
+    ['Attire', [['attire','Attire / dress code']]],
+    ['Location at Maps', [['churchAddress','Address ng simbahan','area'],['churchMap','Google Maps link ng simbahan (optional — i-paste ang Share link)','url'],['receptionAddress','Address ng reception','area'],['receptionMap','Google Maps link ng reception (optional)','url']]],
+    ['Ibang texts', [['gallerySub','Text sa Gallery','area'],['sponsorsSub','Text sa Principal Sponsors','area'],['giftsSub','Text sa Gift Suggestions','area'],['rsvpDeadline','RSVP deadline (hal. December 1, 2026)'],['thank1','Thank You — unang talata','area'],['thank2','Thank You — pangalawang talata','area'],['familyName','Pirma (hal. The Santos Family)']]]
+  ];
+  const defText = k => { const el = document.querySelector('[data-c="' + k + '"]'); return el ? (el.dataset.def !== undefined ? el.dataset.def : el.textContent) : ''; };
+  function renderDetails(){
+    const wrap = h('div');
+    GROUPS.forEach(([title, fields]) => {
+      wrap.append(h('div', { class: 'ed-group', text: title }));
+      fields.forEach(([k, label, type]) => {
+        let inp;
+        if (type === 'datetime'){
+          inp = h('input', { type: 'datetime-local', value: data.cd || DEF_CD });
+          inp.oninput = () => {
+            data.cd = inp.value || undefined; applyCountdown(); markDirty();
+            const d = new Date(inp.value);
+            if (!isNaN(d)){
+              data.t.dateText = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+              data.t.ceremonyTime = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+              applyText();
+              const a = wrap.querySelector('[data-k="dateText"]'), b = wrap.querySelector('[data-k="ceremonyTime"]');
+              if (a) a.value = data.t.dateText; if (b) b.value = data.t.ceremonyTime;
+            }
+          };
+        } else {
+          const isUrl = type === 'url';
+          const val = isUrl ? (data.t[k] || '') : (data.t[k] || defText(k));
+          inp = type === 'area' ? h('textarea', { value: val }) : h('input', { type: isUrl ? 'url' : 'text', value: val, placeholder: isUrl ? 'https://maps.app.goo.gl/…' : '' });
+          inp.oninput = () => { data.t[k] = inp.value; applyText(); applyMaps(); markDirty(); };
+        }
+        inp.dataset.k = k;
+        wrap.append(h('label', { class: 'ed-f' }, h('span', { text: label }), inp));
+      });
+    });
+    wrap.append(h('div', { class: 'ed-note', text: 'Tip: kapag binago mo ang petsa/oras ng countdown, awtomatikong magbabago rin ang "Petsa na ipapakita" at "Oras ng ceremony". Kung walang Maps link, gagawa ng direction link mula sa address.' }));
+    return wrap;
+  }
+
+  /* --- tab: Photos --- */
+  function renderPhotos(){
+    const wrap = h('div');
+    wrap.append(h('div', { class: 'ed-group', text: 'Main page / Cover' }), photoRow('hero', 'Cover picture (papalit sa video)'));
+    wrap.append(h('div', { class: 'ed-note', text: 'Kapag may cover picture, ito ang lalabas sa main page imbes na video. Pindutin ang ✕ para ibalik ang video.' }));
+    wrap.append(h('div', { class: 'ed-group', text: 'Baby photo (Countdown page)' }), photoRow('baby', 'Larawan ni Keziah'));
+    wrap.append(h('div', { class: 'ed-group', text: 'Gallery' }));
+    for (let i = 1; i <= 8; i++) wrap.append(photoRow('gallery' + i, 'Gallery photo ' + i));
+    return wrap;
+  }
+
+  /* --- tab: Sponsors --- */
+  function ensureSponsors(){
+    if (!Array.isArray(data.ninong) && !Array.isArray(data.ninang)){
+      const d = window.__sponsorDefaults || [];
+      data.ninong = d.filter(x => x.role === 'Ninong').map(x => x.name);
+      data.ninang = d.filter(x => x.role === 'Ninang').map(x => x.name);
+    }
+    data.ninong = data.ninong || []; data.ninang = data.ninang || [];
+  }
+  const lines = v => v.split('\n').map(x => x.trim().slice(0, 60)).filter(Boolean).slice(0, 60);
+  function renderSponsorsTab(){
+    ensureSponsors();
+    const wrap = h('div');
+    const sub = h('textarea', { value: data.t.sponsorsSub || defText('sponsorsSub') });
+    sub.oninput = () => { data.t.sponsorsSub = sub.value; applyText(); markDirty(); };
+    wrap.append(h('label', { class: 'ed-f' }, h('span', { text: 'Text sa itaas ng Principal Sponsors' }), sub));
+    [['ninong', 'Mga Ninong (isang pangalan bawat linya)'], ['ninang', 'Mga Ninang (isang pangalan bawat linya)']].forEach(([role, label]) => {
+      const ta = h('textarea', { value: data[role].join('\n') }); ta.style.minHeight = '120px';
+      ta.oninput = () => { data[role] = lines(ta.value); markDirty(); };
+      ta.onchange = () => applySponsors();
+      wrap.append(h('div', { class: 'ed-group', text: role === 'ninong' ? 'Ninong' : 'Ninang' }), h('label', { class: 'ed-f' }, h('span', { text: label }), ta));
+    });
+    wrap.append(h('div', { class: 'ed-note', text: 'Tandaan: ang "Responded" ng bawat ninong/ninang ay naka-link sa pangalan. Kapag pinalitan ang pangalan, bagong response slot ito (naka-save pa rin sa Firestore ang luma).' }));
+    return wrap;
+  }
+
+  /* --- tab: Gifts --- */
+  function renderGiftsTab(){
+    if (!Array.isArray(data.gifts)) data.gifts = JSON.parse(JSON.stringify(window.__giftDefaults || []));
+    const wrap = h('div');
+    const sub = h('textarea', { value: data.t.giftsSub || defText('giftsSub') });
+    sub.oninput = () => { data.t.giftsSub = sub.value; applyText(); markDirty(); };
+    wrap.append(h('label', { class: 'ed-f' }, h('span', { text: 'Text sa itaas ng Gift Suggestions' }), sub));
+    data.gifts.forEach((b, i) => {
+      const name = h('input', { type: 'text', value: b.name });
+      name.oninput = () => { b.name = name.value; markDirty(); }; name.onchange = applyGifts;
+      const items = h('textarea', { value: (b.items || []).join('\n') });
+      items.oninput = () => { b.items = items.value.split('\n').map(x => x.trim().slice(0, 100)).filter(Boolean); markDirty(); }; items.onchange = applyGifts;
+      const del = h('button', { type: 'button', text: '🗑 Alisin ang brand', onclick: () => {
+        if (!confirm('Alisin ang "' + b.name + '"?')) return;
+        if (safeImg(imgs['gift_' + b.id])) saveImg('gift_' + b.id, null);
+        data.gifts.splice(i, 1); applyGifts(); markDirty(); refresh(); } });
+      wrap.append(h('div', { class: 'ed-card' },
+        h('label', { class: 'ed-f' }, h('span', { text: 'Pangalan ng brand #' + (i + 1) }), name),
+        photoRow('gift_' + b.id, 'Logo ng brand'),
+        h('label', { class: 'ed-f' }, h('span', { text: 'Gift ideas (isa bawat linya)' }), items),
+        del));
+    });
+    if (data.gifts.length < 8) wrap.append(h('button', { type: 'button', text: '＋ Magdagdag ng brand', onclick: () => {
+      data.gifts.push({ id: 'g' + Date.now().toString(36), name: 'New Brand', items: ['Gift idea 1'] }); applyGifts(); markDirty(); refresh(); } }));
+    return wrap;
+  }
+
+  /* --- tab: Backgrounds --- */
+  async function saveBg(id, d){
+    cache[id] = d; applyBg(id, d); refresh();
+    try { await setDoc(doc(db, 'siteBackgrounds', id), { img: d.img || null, fit: d.fit || 'fill', color: d.color || null, updatedAt: serverTimestamp() }); say('Na-save ✓ — makikita na ito ng lahat ng bisita.'); }
+    catch(e){ say('Naka-preview lang sa device mo. Hindi na-save online — i-update ang Firestore rules (tingnan ang EDIT-MODE.md).'); console.warn(e); }
+  }
+  function renderBgTab(){
+    const wrap = h('div', null, h('div', { class: 'ed-note', text: 'Background ng bawat section. Fill = pupunuin ang section; Fit height = buong taas ng image.' }));
     SECTIONS.forEach(([id, label]) => {
       const d = cache[id], on = !!(d && d.img);
-      const row = document.createElement('div'); row.className = 'row';
-      row.innerHTML = '<span class="dot' + (on ? ' on' : '') + '"></span><span class="nm">' + label + '</span>';
-      const up = document.createElement('button'); up.type = 'button'; up.textContent = on ? 'Palitan' : 'Upload';
-      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.hidden = true;
-      up.onclick = () => inp.click();
+      const inp = h('input', { type: 'file', accept: 'image/*', hidden: '' });
+      const up = h('button', { type: 'button', text: on ? 'Palitan' : 'Upload', onclick: () => inp.click() });
       inp.onchange = async () => { if (!inp.files[0]) return; say('Pino-process ang image…');
-        try { const r = await compress(inp.files[0]); await save(id, { ...r, fit: (cache[id] && cache[id].fit) || 'fill' }); } catch(e){ say(e.message); } };
-      row.append(up, inp);
+        try { const r = await compress(inp.files[0]); await saveBg(id, { ...r, fit: (cache[id] && cache[id].fit) || 'fill' }); } catch(e){ say(e.message); } };
+      const row = h('div', { class: 'row' }, h('span', { class: 'dot' + (on ? ' on' : '') }), h('span', { class: 'nm', text: label }), up, inp);
       if (on){
-        const sel = document.createElement('select'); sel.title = 'Paano ilalagay';
-        sel.innerHTML = '<option value="fill">Fill</option><option value="fit">Fit height</option>'; sel.value = d.fit === 'fit' ? 'fit' : 'fill';
-        sel.onchange = () => save(id, { ...cache[id], fit: sel.value });
-        const rs = document.createElement('button'); rs.type = 'button'; rs.textContent = '✕'; rs.title = 'Ibalik sa original';
-        rs.onclick = () => save(id, { img: null });
-        row.append(sel, rs);
+        const sel = h('select', { title: 'Paano ilalagay' }, h('option', { value: 'fill', text: 'Fill' }), h('option', { value: 'fit', text: 'Fit height' }));
+        sel.value = d.fit === 'fit' ? 'fit' : 'fill'; sel.onchange = () => saveBg(id, { ...cache[id], fit: sel.value });
+        row.append(sel, h('button', { type: 'button', title: 'Ibalik sa original', text: '✕', onclick: () => saveBg(id, { img: null }) }));
       }
-      rows.appendChild(row);
+      wrap.append(row);
     });
+    return wrap;
   }
-  window.__bgRefresh = refresh; refresh();
+
+  /* --- tab plumbing --- */
+  const TABS = [['details','📝 Details',renderDetails,true],['photos','🖼 Photos',renderPhotos,false],['sponsors','👪 Ninong/Ninang',renderSponsorsTab,true],['gifts','🎁 Gifts',renderGiftsTab,true],['bg','🎨 Backgrounds',renderBgTab,false]];
+  let tab = 'details';
+  function refresh(){
+    tabsBar.innerHTML = '';
+    TABS.forEach(([id, label]) => tabsBar.append(h('button', { type: 'button', class: id === tab ? 'on' : '', text: label, onclick: () => { tab = id; refresh(); } })));
+    const t = TABS.find(x => x[0] === tab);
+    body.innerHTML = ''; body.append(t[2]());
+    saveBtn.style.display = t[3] ? '' : 'none';
+  }
+  const typing = () => body.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  window.__bgRefresh = () => { if (tab === 'bg' && !typing()) refresh(); };
+  window.__edRefresh = () => { if (!typing()) refresh(); };
+  refresh();
+
+  let unlocked = false;
   fab.onclick = () => {
     if (!unlocked){ if (prompt('Edit passcode:') !== EDIT_PASS) return; unlocked = true; }
     panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
