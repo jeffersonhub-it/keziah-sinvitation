@@ -1104,6 +1104,21 @@ footer{font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;background
  .details{background-image:url('images/bg-details.jpg');background-size:auto 100%;background-position:center}
 }
 
+
+/* ===== image background on EVERY section ===== */
+.gallery{background:#e5b6c0 url('images/bg-gate.jpg') center/cover no-repeat;padding-bottom:clamp(150px,34vw,220px)}
+.location{background:#faeaeb url('images/bg-hero.jpg') center/cover no-repeat;padding-bottom:clamp(150px,34vw,220px)}
+.sponsors{background:#f2dedc url('images/bg-countdown.jpg') center/cover no-repeat;padding-bottom:clamp(150px,34vw,220px)}
+.gifts{background:#e5b6c0 url('images/bg-gate.jpg') center/cover no-repeat;padding-bottom:clamp(150px,34vw,220px)}
+.rsvp{background:#f8e8e0 url('images/bg-details.jpg') center/cover no-repeat;padding-bottom:clamp(150px,34vw,220px)}
+.guestbook{background:#faeaeb url('images/bg-hero.jpg') center/cover no-repeat;padding-bottom:clamp(150px,34vw,220px)}
+.thankyou{background:#e5b6c0 url('images/bg-gate.jpg') center/cover no-repeat}
+.rsvp .section-title,.rsvp .rsvp-success,.rsvp .rsvp-success p{color:var(--ink)}
+.rsvp .section-title::after{background:var(--gold)}
+.rsvp .section-sub{color:var(--ink-soft)}
+.rsvp .eyebrow-mark,.rsvp .eyebrow-mark span{color:var(--gold-text)}
+.mini-floral,.bloom{display:none}
+@media (min-aspect-ratio:1/1){.gallery,.location,.sponsors,.gifts,.rsvp,.guestbook,.thankyou{background-size:auto 100%}}
 /* ===== editable backgrounds (uploaded via ?edit panel) ===== */
 [data-custom-bg]:not(.entry-gate){background-color:var(--bgc)!important;background-image:var(--bg)!important;background-repeat:no-repeat!important;background-attachment:scroll!important;background-position:center!important;background-size:cover!important}
 [data-custom-bg="fit"]:not(.entry-gate){background-size:auto 100%!important}
